@@ -24,8 +24,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg); color: var(--text); height:100vh; overflow:hidden;
         }
-
-        /* Container */
         .wrap {
             max-width: 600px; margin: 0 auto; height: 100vh;
             display: flex; flex-direction: column;
@@ -35,8 +33,6 @@
         @media (min-width: 640px) {
             .wrap { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
         }
-
-        /* Header */
         .hdr {
             padding: 12px 16px; border-bottom: 1px solid var(--border);
             background: rgba(7,11,29,0.85); backdrop-filter: blur(12px);
@@ -57,12 +53,8 @@
             background: var(--glass); color: var(--text-sec); display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-size: 14px;
         }
-
-        /* Screens */
         .scr { display: none; flex-direction: column; height: 100%; }
         .scr.active { display: flex; }
-
-        /* Welcome */
         .welcome {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 24px; text-align: center; gap: 16px;
@@ -80,8 +72,6 @@
         }
         .btn-sm { padding: 10px 14px; font-size: 12px; max-width: none; width: auto; }
         .btn-danger { background: rgba(255,71,87,0.15); color: var(--danger); border: 1px solid rgba(255,71,87,0.3); }
-
-        /* Pending */
         .pending {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 24px; text-align: center; gap: 12px;
@@ -94,8 +84,6 @@
             border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Chat */
         .chat { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
         .msg {
             max-width: 90%; padding: 10px 13px; border-radius: 14px; font-size: 13.5px;
@@ -120,8 +108,6 @@
         }
         .msg:hover .msg-copy { opacity: 1; }
         .msg-copy:active { background: var(--accent); color: #000; }
-
-        /* Bottom bar */
         .bottom {
             padding: 8px 12px 16px; border-top: 1px solid var(--border);
             background: rgba(7,11,29,0.9); backdrop-filter: blur(12px); flex-shrink: 0;
@@ -146,8 +132,6 @@
         }
         .btn-tpl.active { background: rgba(245,166,35,0.15); color: var(--accent); border-color: rgba(245,166,35,0.3); }
         .typing-indicator { font-size: 11px; color: var(--accent); padding: 0 4px; min-height: 16px; }
-
-        /* Templates drawer */
         .tpl-drawer {
             position: absolute; bottom: 0; left: 0; right: 0;
             background: linear-gradient(180deg, #12183a, #0a0e27);
@@ -174,15 +158,11 @@
             position: absolute; top: 10px; right: 14px; background: none; border: none;
             color: var(--text-sec); font-size: 20px; cursor: pointer; padding: 4px;
         }
-
-        /* Overlay behind drawer */
         .overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6);
             opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 40;
         }
         .overlay.active { opacity: 1; pointer-events: auto; }
-
-        /* Admin */
         .admin { padding: 16px; overflow-y: auto; }
         .admin-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .admin-h h2 { font-size: 18px; }
@@ -215,8 +195,6 @@
         .bg-no { background: rgba(255,71,87,0.12); color: var(--danger); }
         .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .btn-row .btn { flex: 1; min-width: 120px; }
-
-        /* Modal */
         .modal {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             display: none; align-items: center; justify-content: center; z-index: 100;
@@ -237,7 +215,6 @@
             background: var(--accent); color: #0a0e27; font-weight: 700; cursor: pointer;
         }
         .modal-err { color: var(--danger); font-size: 11px; text-align: center; margin-top: 8px; display: none; }
-
         .toast {
             position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
             background: var(--success); color: #fff; padding: 10px 20px; border-radius: 10px;
@@ -246,7 +223,6 @@
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.warn { background: var(--warning); }
         .toast.err { background: var(--danger); }
-
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
     </style>
@@ -264,7 +240,6 @@
             </div>
         </div>
 
-        <!-- Welcome -->
         <div class="scr active" id="scrWelcome">
             <div class="welcome">
                 <div class="welcome-emoji">🤖</div>
@@ -275,7 +250,6 @@
             </div>
         </div>
 
-        <!-- Pending -->
         <div class="scr" id="scrPending">
             <div class="pending">
                 <div class="pending-emoji">⏳</div>
@@ -286,7 +260,6 @@
             </div>
         </div>
 
-        <!-- Chat -->
         <div class="scr" id="scrChat" style="position:relative;">
             <div class="chat" id="chat"></div>
             <div class="typing-indicator" id="typingInd"></div>
@@ -298,8 +271,6 @@
                     <button class="btn-send" id="btnSend" onclick="send()">➤</button>
                 </div>
             </div>
-
-            <!-- Templates Drawer -->
             <div class="overlay" id="ovl" onclick="toggleTpl()"></div>
             <div class="tpl-drawer" id="drawer">
                 <button class="tpl-close" onclick="toggleTpl()">✕</button>
@@ -308,7 +279,6 @@
             </div>
         </div>
 
-        <!-- Admin -->
         <div class="scr admin" id="scrAdmin">
             <div class="admin-h">
                 <h2>👑 Админ</h2>
@@ -320,31 +290,42 @@
                 <div class="stat"><b id="sOk">0</b><br><span>Активные</span></div>
             </div>
             <div class="card">
-                <h3>🔌 API OpenAI</h3>
-                <div class="row"><label>Endpoint</label><input id="apiUrl" value="https://api.openai.com/v1/chat/completions"></div>
-                <div class="row"><label>API Key</label><input id="apiKey" type="password" value="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"></div>
+                <h3>🔌 API OpenAI (через прокси)</h3>
+                <div class="row"><label>Worker URL</label><input id="apiUrl" value="https://salam-cowork.YOUR_SUBDOMAIN.workers.dev"></div>
                 <div class="row"><label>Модель</label><input id="apiModel" value="gpt-4o-mini"></div>
+                <p style="font-size:11px;color:var(--text-sec);margin-bottom:8px;">
+                    API Key хранится безопасно в Cloudflare Worker. Укажите реальный URL Worker после деплоя.
+                </p>
                 <button class="btn btn-sm" onclick="saveApi()" style="width:100%;">💾 Сохранить API</button>
+            </div>
+            <div class="card">
+                <h3>📨 Уведомления в Telegram (админу)</h3>
+                <div class="row"><label>Bot Token</label><input id="tgBotToken" type="password" placeholder="123456:ABC-DEF..."></div>
+                <div class="row"><label>Admin Chat ID</label><input id="tgChatId" placeholder="123456789"></div>
+                <p style="font-size:11px;color:var(--text-sec);margin-bottom:8px;">
+                    Как получить Chat ID: напишите боту @userinfobot или @getidsbot.
+                </p>
+                <div class="btn-row">
+                    <button class="btn btn-sm" onclick="saveTgBot()" style="flex:2">💾 Сохранить</button>
+                    <button class="btn btn-sm btn-outline" onclick="testTgNotify()" style="flex:1">🧪 Тест</button>
+                </div>
             </div>
             <div class="card">
                 <h3>🔔 Уведомления админу (Webhook)</h3>
                 <div class="row"><label>Webhook URL</label><input id="webhookUrl" placeholder="https://... (POST JSON)"></div>
-                <p style="font-size:11px;color:var(--text-sec);margin-bottom:8px;">
-                    При новом запросе доступа сюда отправится POST с данными пользователя. Настройте бэкенд или сервис вроде n8n / make.com / Zapier.
-                </p>
                 <button class="btn btn-sm" onclick="saveWebhook()" style="width:100%;">💾 Сохранить Webhook</button>
             </div>
             <div class="card">
                 <h3>📚 База знаний</h3>
                 <div class="row"><label>Knowledge Base</label><textarea id="knowledgeEditor"></textarea></div>
                 <button class="btn btn-sm" onclick="saveKnowledge()" style="width:100%;">💾 Сохранить БЗ</button>
-                <button class="btn btn-sm btn-outline" onclick="resetKnowledge()" style="width:100%;margin-top:8px;">↩️ Сбросить к дефолту</button>
+                <button class="btn btn-sm btn-outline" onclick="resetKnowledge()" style="width:100%;margin-top:8px;">↩️ Сбросить</button>
             </div>
             <div class="card">
                 <h3>💾 Backup / Restore</h3>
                 <div class="btn-row">
-                    <button class="btn btn-sm btn-outline" onclick="exportData()">📤 Экспорт JSON</button>
-                    <button class="btn btn-sm btn-outline" onclick="document.getElementById('importFile').click()">📥 Импорт JSON</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportData()">📤 Экспорт</button>
+                    <button class="btn btn-sm btn-outline" onclick="document.getElementById('importFile').click()">📥 Импорт</button>
                     <input type="file" id="importFile" style="display:none" accept="application/json" onchange="importData(this)">
                 </div>
             </div>
@@ -355,7 +336,6 @@
         </div>
     </div>
 
-    <!-- Password Modal -->
     <div class="modal" id="modal">
         <div class="modal-box">
             <h3>🔐 Админка</h3>
@@ -369,11 +349,10 @@
     <div class="toast" id="toast"></div>
 
 <script>
-// ===================== DATA =====================
 const ADJ = ["Swift","Bright","Clever","Brave","Lucky","Golden","Happy","Wise","Cool","Noble","Quick","Silent","Bold","Calm","Royal","Smart","Wild","Keen","Grand","Sharp","Mighty","Gentle","Fierce","Proud","Magic"];
 const ANI = ["Eagle","Tiger","Falcon","Shark","Wolf","Bear","Lion","Hawk","Fox","Panda","Otter","Moose","Lynx","Cobra","Bison","Stallion","Leopard","Panther","Raven","Cheetah","Dragon","Jaguar","Buffalo","Rhino","Gorilla"];
 const ADMIN_PASS = "GTsalam2024!";
-const DEFAULT_API = { endpoint:"https://api.openai.com/v1/chat/completions", key:"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", model:"gpt-4o-mini" };
+const DEFAULT_API = { endpoint:"https://salam-cowork.YOUR_SUBDOMAIN.workers.dev", key:"", model:"gpt-4o-mini" };
 
 const DEFAULT_KNOWLEDGE = `GRAND TRUST CONSULTING — OFFICIAL KNOWLEDGE BASE
 COMPANY: OMI Enterprise / Grand Trust Consulting. Global Mobility & Business Solutions. HQ: Ritz Carlton Plaza, Almaty, Kazakhstan. Email: info@grandtrustconsulting.com. Hours: Mon–Sat 09:00–20:00 GMT+5. Core Values: Speed, Transparency, Borderless.
@@ -445,10 +424,8 @@ const TEMPLATES = [
     {id:"group", cat:"process", title:"Групповая заявка", desc:"4 чел, $2,200", prompt:"Write group processing (4 people): 4 C3 Work Visas (1 year each). Total $2,200 ($550 per person). Entry B2 for all four, C3 conversion for all four, same 2-3 day timeline, group coordination. Payment only after all 4 approved (72h window)."},
 ];
 
-// ===================== STATE =====================
 let user=null, api={...DEFAULT_API}, typing=false, adminOk=false;
-let webhookUrl='';
-let KNOWLEDGE = DEFAULT_KNOWLEDGE;
+let webhookUrl='', KNOWLEDGE=DEFAULT_KNOWLEDGE, tgBotToken='', tgChatId='';
 
 function getTgUser(){
     try{ const u=window.Telegram?.WebApp?.initDataUnsafe?.user; if(u&&u.id) return u; }catch(e){}
@@ -458,141 +435,142 @@ function generateStableNick(tgUser){
     if(!tgUser) return null;
     if(tgUser.username) return '@'+tgUser.username;
     if(tgUser.first_name) return tgUser.first_name;
-    // deterministic fallback from id
-    const seed = tgUser.id;
-    const a = ADJ[seed % ADJ.length];
-    const b = ANI[(seed >> 3) % ANI.length];
+    const seed=tgUser.id, a=ADJ[seed%ADJ.length], b=ANI[(seed>>3)%ANI.length];
     return a+' '+b;
 }
 function makeUserId(tgUser){
-    if(tgUser && tgUser.id) return 'tg_'+tgUser.id;
+    if(tgUser&&tgUser.id) return 'tg_'+tgUser.id;
     return 'local_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 }
+function allUsers(){ try{ return JSON.parse(localStorage.getItem('gt_users')||'[]'); }catch(e){ return []; } }
+function nickRandom(){ const used=allUsers().map(x=>x.nick); let n; do{ n=ADJ[Math.floor(Math.random()*ADJ.length)]+' '+ANI[Math.floor(Math.random()*ANI.length)]; }while(used.includes(n)); return n; }
 
 function init(){
     if(window.Telegram?.WebApp){ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
-    loadApi(); loadWebhook(); loadKnowledge(); loadUser(); renderTpl(); setInterval(checkApproval, 5000);
+    loadApi(); loadWebhook(); loadTgBot(); loadKnowledge(); loadUser(); renderTpl(); setInterval(checkApproval, 5000);
 }
 
 function loadApi(){
     const s=localStorage.getItem('gt_api');
     if(s){ try{ api=JSON.parse(s); }catch(e){} }
     else localStorage.setItem('gt_api', JSON.stringify(api));
-    const el1=document.getElementById('apiUrl'), el2=document.getElementById('apiKey'), el3=document.getElementById('apiModel');
-    if(el1) el1.value=api.endpoint; if(el2) el2.value=api.key; if(el3) el3.value=api.model;
+    const el1=document.getElementById('apiUrl'), el2=document.getElementById('apiModel');
+    if(el1) el1.value=api.endpoint; if(el2) el2.value=api.model;
 }
 function saveApi(){
-    api={ endpoint:document.getElementById('apiUrl').value.trim(), key:document.getElementById('apiKey').value.trim(), model:document.getElementById('apiModel').value.trim()||'gpt-4o-mini' };
+    api={ endpoint:document.getElementById('apiUrl').value.trim(), key:"", model:document.getElementById('apiModel').value.trim()||'gpt-4o-mini' };
     localStorage.setItem('gt_api', JSON.stringify(api)); toast('✅ API сохранено');
 }
 
 function loadWebhook(){
-    webhookUrl = localStorage.getItem('gt_webhook') || '';
-    document.getElementById('webhookUrl').value = webhookUrl;
+    webhookUrl=localStorage.getItem('gt_webhook')||'';
+    document.getElementById('webhookUrl').value=webhookUrl;
 }
 function saveWebhook(){
-    webhookUrl = document.getElementById('webhookUrl').value.trim();
+    webhookUrl=document.getElementById('webhookUrl').value.trim();
     localStorage.setItem('gt_webhook', webhookUrl);
     toast('✅ Webhook сохранён');
 }
 
+function loadTgBot(){
+    tgBotToken=localStorage.getItem('gt_bot_token')||'';
+    tgChatId=localStorage.getItem('gt_chat_id')||'';
+    document.getElementById('tgBotToken').value=tgBotToken;
+    document.getElementById('tgChatId').value=tgChatId;
+}
+function saveTgBot(){
+    tgBotToken=document.getElementById('tgBotToken').value.trim();
+    tgChatId=document.getElementById('tgChatId').value.trim();
+    localStorage.setItem('gt_bot_token', tgBotToken);
+    localStorage.setItem('gt_chat_id', tgChatId);
+    toast('✅ Telegram настройки сохранены');
+}
+async function sendTgMessage(text){
+    if(!tgBotToken||!tgChatId) return false;
+    const url=`https://api.telegram.org/bot${tgBotToken}/sendMessage`;
+    const body=new URLSearchParams({chat_id:tgChatId, text:text, parse_mode:'HTML'});
+    try{ await fetch(url,{method:'POST',body:body,mode:'no-cors'}); return true; }catch(e){ return false; }
+}
+async function testTgNotify(){
+    if(!tgBotToken||!tgChatId){ toast('❌ Сначала введите Token и Chat ID','err'); return; }
+    await sendTgMessage('🧪 <b>Тест уведомления</b>\nЕсли вы видите это сообщение, настройки верны.');
+    toast('🧪 Тестовое сообщение отправлено');
+}
+
 function loadKnowledge(){
-    const k = localStorage.getItem('gt_knowledge');
-    KNOWLEDGE = k || DEFAULT_KNOWLEDGE;
-    document.getElementById('knowledgeEditor').value = KNOWLEDGE;
+    const k=localStorage.getItem('gt_knowledge');
+    KNOWLEDGE=k||DEFAULT_KNOWLEDGE;
+    document.getElementById('knowledgeEditor').value=KNOWLEDGE;
 }
 function saveKnowledge(){
-    KNOWLEDGE = document.getElementById('knowledgeEditor').value;
+    KNOWLEDGE=document.getElementById('knowledgeEditor').value;
     localStorage.setItem('gt_knowledge', KNOWLEDGE);
     toast('✅ База знаний сохранена');
 }
 function resetKnowledge(){
     if(!confirm('Сбросить базу знаний к значению по умолчанию?')) return;
-    KNOWLEDGE = DEFAULT_KNOWLEDGE;
+    KNOWLEDGE=DEFAULT_KNOWLEDGE;
     localStorage.setItem('gt_knowledge', KNOWLEDGE);
-    document.getElementById('knowledgeEditor').value = KNOWLEDGE;
+    document.getElementById('knowledgeEditor').value=KNOWLEDGE;
     toast('↩️ База знаний сброшена');
 }
 
-function nickRandom(){ const used=allUsers().map(x=>x.nick); let n; do{ n=ADJ[Math.floor(Math.random()*ADJ.length)]+' '+ANI[Math.floor(Math.random()*ANI.length)]; }while(used.includes(n)); return n; }
-function allUsers(){ try{ return JSON.parse(localStorage.getItem('gt_users')||'[]'); }catch(e){ return []; } }
-
 function loadUser(){
-    const tg = getTgUser();
-    // Try to find existing user by Telegram ID first
-    let u = null;
-    if(tg){
-        const users = allUsers();
-        u = users.find(x => x.tgId === tg.id);
-    }
-    // Fallback to localStorage current user (for non-TG or legacy)
+    const tg=getTgUser();
+    let u=null;
+    if(tg){ const users=allUsers(); u=users.find(x=>x.tgId===tg.id); }
     if(!u){
-        const s = localStorage.getItem('gt_current_user');
+        const s=localStorage.getItem('gt_current_user');
         if(s){ try{ u=JSON.parse(s); }catch(e){} }
     }
     if(u){
-        user = u;
+        user=u;
         document.getElementById('hdrNick').style.display='inline';
-        document.getElementById('hdrNick').textContent = user.nick || 'User';
+        document.getElementById('hdrNick').textContent=user.nick||'User';
         if(user.status==='approved'){
             show('scrChat');
             if(!user.welcomed){ bot('👋 С возвращением, '+(user.nick||'друг')+'! Пишите вопросы на русском — я сформирую ответы на английском для клиентов.', false); user.welcomed=true; save(); }
             renderHistory();
         } else {
             show('scrPending');
-            document.getElementById('pendNick').textContent = user.nick || 'User';
+            document.getElementById('pendNick').textContent=user.nick||'User';
         }
     }
 }
 
 function requestAccess(){
-    const tg = getTgUser();
-    const users = allUsers();
-    let existing = null;
-    if(tg) existing = users.find(x => x.tgId === tg.id);
+    const tg=getTgUser();
+    const users=allUsers();
+    let existing=null;
+    if(tg) existing=users.find(x=>x.tgId===tg.id);
+    if(existing&&existing.status==='approved'){ user=existing; user.welcomed=false; save(); loadUser(); toast('✅ У вас уже есть доступ'); return; }
+    if(existing&&existing.status==='pending'){ user=existing; save(); loadUser(); toast('⏳ Вы уже в очереди'); return; }
+    if(existing&&existing.status==='rejected'){ existing.status='pending'; existing.created=new Date().toISOString(); user=existing; save(); loadUser(); notifyAdmin({action:'request_access',nick:user.nick,userId:user.id,tgId:user.tgId,status:'re-request'}); return; }
 
-    if(existing && existing.status === 'approved'){
-        user = existing; user.welcomed = false;
-        save(); loadUser(); toast('✅ У вас уже есть доступ');
-        return;
-    }
-    if(existing && existing.status === 'pending'){
-        user = existing;
-        save(); loadUser(); toast('⏳ Вы уже в очереди');
-        return;
-    }
-    if(existing && existing.status === 'rejected'){
-        // Allow re-request
-        existing.status = 'pending';
-        existing.created = new Date().toISOString();
-        user = existing;
-        save(); loadUser();
-        notifyAdmin({action:'request_access', nick:user.nick, userId:user.id, tgId:user.tgId, status:'re-request'});
-        return;
-    }
-
-    const n = tg ? generateStableNick(tg) : nickRandom();
-    const id = makeUserId(tg);
-    user = { id, nick:n, status:'pending', created:new Date().toISOString(), history:[], welcomed:false };
-    if(tg){ user.tgId = tg.id; user.tgUsername = tg.username; user.tgFirstName = tg.first_name; }
+    const n=tg?generateStableNick(tg):nickRandom();
+    const id=makeUserId(tg);
+    user={id,nick:n,status:'pending',created:new Date().toISOString(),history:[],welcomed:false};
+    if(tg){ user.tgId=tg.id; user.tgUsername=tg.username; user.tgFirstName=tg.first_name; }
     users.push(user);
     localStorage.setItem('gt_users', JSON.stringify(users));
     localStorage.setItem('gt_current_user', JSON.stringify(user));
     document.getElementById('hdrNick').style.display='inline'; document.getElementById('hdrNick').textContent=n;
     document.getElementById('pendNick').textContent=n; show('scrPending'); toast('✅ Запрос отправлен');
-    notifyAdmin({action:'request_access', nick:n, userId:id, tgId:tg?tg.id:null, tgUsername:tg?tg.username:null});
+    notifyAdmin({action:'request_access',nick:n,userId:id,tgId:tg?tg.id:null,tgUsername:tg?tg.username:null});
 }
 
 async function notifyAdmin(payload){
-    // 1. Try webhook if configured
-    if(webhookUrl){
-        try{
-            await fetch(webhookUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
-        }catch(e){ console.error('Webhook error', e); }
+    if(tgBotToken&&tgChatId){
+        const lines=[`🔔 <b>Новый запрос доступа</b>`,`👤 Ник: ${payload.nick||'—'}`,`🆔 ID: <code>${payload.userId||'—'}</code>`];
+        if(payload.tgUsername) lines.push(`📱 Telegram: @${payload.tgUsername}`);
+        else if(payload.tgId) lines.push(`📱 Telegram ID: ${payload.tgId}`);
+        if(payload.status) lines.push(`📝 Тип: ${payload.status}`);
+        lines.push(`⏰ Время: ${new Date().toLocaleString('ru-RU')}`);
+        await sendTgMessage(lines.join('\n'));
     }
-    // 2. Fallback: sendData to bot (closes webapp, but bot gets the data)
-    if(window.Telegram?.WebApp && !webhookUrl){
-        try{ Telegram.WebApp.sendData(JSON.stringify(payload)); }catch(e){}
+    if(webhookUrl){
+        try{ await fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+        catch(e){ console.error('Webhook error',e); }
     }
 }
 
@@ -609,27 +587,26 @@ function backFromAdmin(){ if(user&&user.status==='approved') show('scrChat'); el
 
 function renderHistory(){
     const c=document.getElementById('chat'); c.innerHTML='';
-    if(user && user.history){
+    if(user&&user.history){
         for(const m of user.history){
-            if(m.role==='user') renderUserMsg(m.text, m.time);
-            else renderBotMsg(m.text, m.time, false);
+            if(m.role==='user') renderUserMsg(m.text,m.time);
+            else renderBotMsg(m.text,m.time,false);
         }
     }
     c.scrollTop=c.scrollHeight;
 }
-function renderUserMsg(text, timeStr){
+function renderUserMsg(text,timeStr){
     const c=document.getElementById('chat'); const d=document.createElement('div'); d.className='msg msg-u';
-    const tm=timeStr ? new Date(timeStr).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const tm=timeStr?new Date(timeStr).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
     d.innerHTML=`<div>${esc(text)}</div><div class="msg-time">${tm}</div>`; c.appendChild(d);
 }
-function renderBotMsg(text, timeStr, saveFlag=true){
+function renderBotMsg(text,timeStr,saveFlag=true){
     const c=document.getElementById('chat'); const d=document.createElement('div'); d.className='msg msg-b';
-    const tm=timeStr ? new Date(timeStr).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const tm=timeStr?new Date(timeStr).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
     const cl=text.replace(/\n/g,'<br>'); d.innerHTML=`<div>${cl}</div><div class="msg-time">${tm}</div><button class="msg-copy" onclick="copy(this)">📋 Копировать</button>`;
     c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
 
-// ===================== TEMPLATES =====================
 function renderTpl(){
     const g=document.getElementById('tplGrid'); let h='';
     for(const t of TEMPLATES){ h+=`<div class="tpl-item" onclick="useTpl('${t.id}')"><div class="t1">${t.cat}</div><div class="t2">${t.title}</div><div class="t3">${t.desc}</div></div>`; }
@@ -638,23 +615,24 @@ function renderTpl(){
 function toggleTpl(){ document.getElementById('drawer').classList.toggle('open'); document.getElementById('ovl').classList.toggle('active'); document.getElementById('tplBtn').classList.toggle('active'); }
 function useTpl(id){
     const t=TEMPLATES.find(x=>x.id===id); if(!t) return;
-    usr('📋 '+t.title); toggleTpl(); ai(t.prompt, true);
+    usr('📋 '+t.title); toggleTpl(); ai(t.prompt,true);
 }
 
-// ===================== CHAT =====================
-function send(){ const v=document.getElementById('inp').value.trim(); if(!v||typing) return; document.getElementById('inp').value=''; usr(v); ai(v, false); }
+function send(){ const v=document.getElementById('inp').value.trim(); if(!v||typing) return; document.getElementById('inp').value=''; usr(v); ai(v,false); }
 function usr(t){ renderUserMsg(t); if(user){ user.history.push({role:'user',text:t,time:new Date().toISOString()}); save(); }}
 function bot(t,sv=true){ renderBotMsg(t,null,sv); if(sv&&user){ user.history.push({role:'bot',text:t,time:new Date().toISOString()}); save(); }}
 function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
 function copy(b){ const t=b.parentElement.querySelector('div').innerText; navigator.clipboard.writeText(t).then(()=>toast('✅ Скопировано')); }
-function setTyping(a){ typing=a; document.getElementById('btnSend').classList.toggle('disabled', a); document.getElementById('typingInd').textContent = a ? 'SALAM печатает…' : ''; }
+function setTyping(a){ typing=a; document.getElementById('btnSend').classList.toggle('disabled',a); document.getElementById('typingInd').textContent=a?'SALAM печатает…':''; }
 function clearChat(){ if(!confirm('Очистить историю чата?')) return; if(user){ user.history=[]; save(); } document.getElementById('chat').innerHTML=''; toast('🗑️ Чат очищен'); }
 
-// ===================== AI =====================
-async function ai(txt, tpl){
+async function ai(txt,tpl){
     setTyping(true);
-    if(api.endpoint&&api.key){ try{ const r=await callApi(txt,tpl); setTyping(false); bot(r); return; }catch(e){ console.error(e); }}
-    setTimeout(()=>{ const r=localReply(txt,tpl); setTyping(false); bot(r); }, 800+Math.random()*600);
+    if(api.endpoint){
+        try{ const r=await callApi(txt,tpl); setTyping(false); bot(r); return; }
+        catch(e){ console.error(e); bot('⚠️ Ошибка API: '+e.message); setTyping(false); return; }
+    }
+    setTimeout(()=>{ const r=localReply(txt,tpl); setTyping(false); bot(r); },800+Math.random()*600);
 }
 async function callApi(txt,tpl){
     const sys=`You are the professional AI assistant for Grand Trust Consulting (Almaty, Kazakhstan). You help managers reply to client inquiries about visas, jobs, immigration, and relocation.
@@ -669,9 +647,14 @@ CRITICAL RULES:
 
 KNOWLEDGE BASE:
 ${KNOWLEDGE}`;
-    const res=await fetch(api.endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+api.key},body:JSON.stringify({model:api.model,messages:[{role:'system',content:sys},{role:'user',content:txt}],temperature:0.7,max_tokens:1500})});
-    if(!res.ok) throw new Error('API error '+res.status);
-    const data=await res.json(); return data.choices[0].message.content;
+    const res=await fetch(api.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:api.model,messages:[{role:'system',content:sys},{role:'user',content:txt}],temperature:0.7,max_tokens:1500})});
+    if(!res.ok){
+        const errText=await res.text();
+        throw new Error('HTTP '+res.status+': '+errText);
+    }
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+    return data.choices[0].message.content;
 }
 function localReply(txt,tpl){
     const l=txt.toLowerCase();
@@ -728,7 +711,6 @@ function localReply(txt,tpl){
     return `📋 Thank you for your inquiry!\n\nI can help with visa prices, job openings, document requirements, payment terms, and timelines for any country we serve.\n\nOr reach us directly: info@grandtrustconsulting.com`;
 }
 
-// ===================== ADMIN =====================
 function openAdmin(){ if(adminOk){ show('scrAdmin'); renderAdmin(); return; } document.getElementById('modal').classList.add('active'); setTimeout(()=>document.getElementById('passInp').focus(),100); }
 function checkPass(){ if(document.getElementById('passInp').value===ADMIN_PASS){ adminOk=true; document.getElementById('modal').classList.remove('active'); document.getElementById('passInp').value=''; document.getElementById('modalErr').style.display='none'; show('scrAdmin'); renderAdmin(); } else { document.getElementById('modalErr').style.display='block'; } }
 function renderAdmin(){
@@ -741,7 +723,7 @@ function renderAdmin(){
     let h=''; u.slice().reverse().forEach(x=>{
         const sc=x.status==='approved'?'bg-ok':x.status==='rejected'?'bg-no':'bg-pending';
         const st=x.status==='approved'?'Одобрен':x.status==='rejected'?'Отклонен':'Ожидает';
-        const tgInfo = x.tgUsername ? ` (@${x.tgUsername})` : x.tgId ? ` (TG:${x.tgId})` : '';
+        const tgInfo=x.tgUsername?` (@${x.tgUsername})`:x.tgId?` (TG:${x.tgId})`:'';
         h+=`<div class="user-row">
             <div><div style="font-weight:600;font-size:13px;">${x.nick}${tgInfo}</div><div style="font-size:10px;color:var(--text-sec);">Запросов: ${(x.history||[]).length} | ID: ${x.id.slice(0,12)}…</div></div>
             <div style="text-align:right;">
@@ -757,35 +739,28 @@ function renderAdmin(){
 function approve(id){ let u=allUsers(); const i=u.findIndex(x=>x.id===id); if(i>=0){ u[i].status='approved'; localStorage.setItem('gt_users', JSON.stringify(u)); if(user&&user.id===id){ user=u[i]; localStorage.setItem('gt_current_user', JSON.stringify(user)); } renderAdmin(); toast('✅ Одобрено'); }}
 function reject(id){ let u=allUsers(); const i=u.findIndex(x=>x.id===id); if(i>=0){ u[i].status='rejected'; localStorage.setItem('gt_users', JSON.stringify(u)); renderAdmin(); toast('❌ Отклонено'); }}
 function save(){ if(!user) return; const u=allUsers(); const i=u.findIndex(x=>x.id===user.id); if(i>=0) u[i]=user; else u.push(user); localStorage.setItem('gt_users', JSON.stringify(u)); localStorage.setItem('gt_current_user', JSON.stringify(user)); }
-function toast(m, type='success'){ const t=document.getElementById('toast'); t.textContent=m; t.className='toast show'+(type==='warn'?' warn':'')+(type==='err'?' err':''); setTimeout(()=>t.classList.remove('show'), 2500); }
+function toast(m,type='success'){ const t=document.getElementById('toast'); t.textContent=m; t.className='toast show'+(type==='warn'?' warn':'')+(type==='err'?' err':''); setTimeout(()=>t.classList.remove('show'),2500); }
 
-// ===================== BACKUP =====================
 function exportData(){
-    const payload = {
-        users: allUsers(),
-        api: api,
-        webhook: webhookUrl,
-        knowledge: KNOWLEDGE,
-        exportedAt: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download='salam_cowork_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url);
+    const payload={users:allUsers(),api:api,webhook:webhookUrl,knowledge:KNOWLEDGE,exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='salam_cowork_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url);
     toast('📤 Экспортировано');
 }
 function importData(input){
-    const file = input.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e){
+    const file=input.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(e){
         try{
-            const data = JSON.parse(e.target.result);
+            const data=JSON.parse(e.target.result);
             if(data.users) localStorage.setItem('gt_users', JSON.stringify(data.users));
             if(data.api){ api=data.api; localStorage.setItem('gt_api', JSON.stringify(api)); loadApi(); }
             if(data.webhook){ webhookUrl=data.webhook; localStorage.setItem('gt_webhook', webhookUrl); loadWebhook(); }
             if(data.knowledge){ KNOWLEDGE=data.knowledge; localStorage.setItem('gt_knowledge', KNOWLEDGE); document.getElementById('knowledgeEditor').value=KNOWLEDGE; }
             toast('📥 Импорт завершён');
             if(user) loadUser();
-        }catch(err){ toast('❌ Ошибка импорта: '+err.message, 'err'); }
+        }catch(err){ toast('❌ Ошибка импорта: '+err.message,'err'); }
     };
     reader.readAsText(file);
     input.value='';
