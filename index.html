@@ -446,6 +446,18 @@ function allUsers(){ try{ return JSON.parse(localStorage.getItem('gt_users')||'[
 function nickRandom(){ const used=allUsers().map(x=>x.nick); let n; do{ n=ADJ[Math.floor(Math.random()*ADJ.length)]+' '+ANI[Math.floor(Math.random()*ANI.length)]; }while(used.includes(n)); return n; }
 
 function init(){
+    // Сброс старых настроек API (один раз)
+    const old = localStorage.getItem('gt_api');
+    if(old){
+        try{
+            const parsed = JSON.parse(old);
+            if(parsed.endpoint && (parsed.endpoint.includes('openai.com') || parsed.endpoint.includes('YOUR_SUBDOMAIN'))){
+                localStorage.removeItem('gt_api');
+                console.log('Cleared old API settings');
+            }
+        }catch(e){}
+    }
+    
     if(window.Telegram?.WebApp){ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
     loadApi(); loadWebhook(); loadTgBot(); loadKnowledge(); loadUser(); renderTpl(); setInterval(checkApproval, 5000);
 }
