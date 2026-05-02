@@ -488,10 +488,20 @@ function init(){
 
 function loadApi(){
     const s=localStorage.getItem('gt_api');
-    if(s){ try{ api=JSON.parse(s); }catch(e){} }
+    if(s){ 
+        try{ 
+            api=JSON.parse(s); 
+            // Автосброс старого URL (без /api/ai или с openai.com)
+            if(api.endpoint && (!api.endpoint.includes('/api/ai') || api.endpoint.includes('openai.com'))){
+                api={...DEFAULT_API};
+                localStorage.setItem('gt_api', JSON.stringify(api));
+            }
+        }catch(e){} 
+    }
     else localStorage.setItem('gt_api', JSON.stringify(api));
     const el1=document.getElementById('apiUrl'), el2=document.getElementById('apiModel');
     if(el1) el1.value=api.endpoint; if(el2) el2.value=api.model;
+
 }
 function saveApi(){
     api={ endpoint:document.getElementById('apiUrl').value.trim(), key:"", model:document.getElementById('apiModel').value.trim()||'gpt-4o-mini' };
