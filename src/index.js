@@ -21,7 +21,7 @@ export default {
         let list = await env.GT_KV.get('users:list');
         list = list ? JSON.parse(list) : [];
         const idx = list.findIndex(u => u.id === user.id);
-        const entry = {id: user.id, nick: user.nick, status: user.status, created: user.created, tgId: user.tgId, tgUsername: user.tgUsername};
+        const entry = {id: user.id, nick: user.nick, status: user.status, created: user.created, tgId: user.tgId, tgUsername: user.tgUsername, company: user.company};
         if (idx >= 0) list[idx] = entry; else list.push(entry);
         await env.GT_KV.put('users:list', JSON.stringify(list));
         return json({ok: true}, corsHeaders);
@@ -58,6 +58,25 @@ export default {
       }
     }
 
+    if (path === '/api/users/company' && request.method === 'POST') {
+      try {
+        const {userId, companyId} = await request.json();
+        const userData = await env.GT_KV.get('user:' + userId);
+        if (!userData) return json({error: 'User not found'}, corsHeaders, 404);
+        const user = JSON.parse(userData);
+        user.company = companyId;
+        await env.GT_KV.put('user:' + userId, JSON.stringify(user));
+        let list = await env.GT_KV.get('users:list');
+        list = list ? JSON.parse(list) : [];
+        const idx = list.findIndex(u => u.id === userId);
+        if (idx >= 0) list[idx].company = companyId;
+        await env.GT_KV.put('users:list', JSON.stringify(list));
+        return json({ok: true}, corsHeaders);
+      } catch(e) {
+        return json({error: e.message}, corsHeaders, 500);
+      }
+    }
+
     if (path === '/api/users/me' && request.method === 'GET') {
       try {
         const userId = url.searchParams.get('id');
@@ -87,6 +106,17 @@ export default {
         const userId = url.searchParams.get('userId');
         const data = await env.GT_KV.get('chat:' + userId);
         return json({history: data ? JSON.parse(data) : []}, corsHeaders);
+      } catch(e) {
+        return json({error: e.message}, corsHeaders, 500);
+      }
+    }
+
+    if (path === '/api/chat/history' && request.method === 'GET') {
+      try {
+        const userId = url.searchParams.get('userId');
+        const data = await env.GT_KV.get('chat:' + userId);
+        const messages = data ? JSON.parse(data) : [];
+        return json({messages}, corsHeaders);
       } catch(e) {
         return json({error: e.message}, corsHeaders, 500);
       }
