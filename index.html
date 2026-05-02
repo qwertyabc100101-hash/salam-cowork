@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+    <title>SALAM COWORK — AI Ассистент</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-deep: #070b1d;
+            --bg-card: rgba(255,255,255,0.03);
+            --border: rgba(255,255,255,0.06);
+            --accent: #f5a623;
+            --accent-2: #f8e71c;
+            --text: #f0f2f7;
+            --text-secondary: #8a8fa8;
+            --success: #00d084;
+            --danger: #ff4757;
+            --warning: #ffa502;
+            --info: #4facfe;
+            --glass: rgba(255,255,255,0.04);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(160deg, #070b1d 0%, #0f1638 40%, #0a0e27 100%);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        .bg-particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .particle {
+            position: absolute; width: 3px; height: 3px;
+            background: var(--accent); border-radius: 50%;
+            opacity: 0.25; animation: float 18s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 0.25; }
+            90% { opacity: 0.25; }
+            100% { transform: translateY(-10vh) translateX(80px); opacity: 0; }
+        }
+        .app-container {
+            position: relative; z-index: 1;
+            max-width: 520px; margin: 0 auto; height: 100vh;
+            display: flex; flex-direction: column;
+            background: rgba(7, 11, 29, 0.7);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+        .header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass); backdrop-filter: blur(16px);
+            flex-shrink: 0;
+        }
+        .logo {
+            font-size: 18px; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 1.5px;
+        }
+        .logo-sub { font-size: 10px; color: var(--text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+        .user-badge {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--text-secondary);
+        }
+        .user-nick {
+            background: linear-gradient(135deg, rgba(245,166,35,0.15), rgba(248,231,28,0.1));
+            border: 1px solid rgba(245,166,35,0.25);
+            padding: 4px 10px; border-radius: 16px;
+            color: var(--accent); font-weight: 600; font-size: 11px;
+        }
+        .admin-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--glass);
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 14px; transition: all 0.3s;
+        }
+        .admin-btn:hover { background: var(--accent); color: #000; }
+
+        .screen {
+            flex: 1; overflow-y: auto; display: none;
+            animation: fadeIn 0.35s ease;
+        }
+        .screen.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .welcome-wrap {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; text-align: center; gap: 20px; padding: 24px;
+        }
+        .welcome-logo {
+            width: 100px; height: 100px; border-radius: 28px;
+            background: linear-gradient(135deg, var(--accent), #ff6b35);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; box-shadow: 0 16px 50px rgba(245, 166, 35, 0.25);
+            animation: pulse 3s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        .welcome-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; }
+        .welcome-sub { color: var(--text-secondary); font-size: 14px; line-height: 1.6; max-width: 340px; }
+        .btn-primary {
+            width: 100%; max-width: 300px; padding: 15px;
+            border: none; border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #0a0e27; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 8px 28px rgba(245, 166, 35, 0.25);
+        }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-secondary {
+            width: 100%; max-width: 300px; padding: 14px;
+            border: 1px solid var(--border); border-radius: 16px;
+            background: var(--glass); color: var(--text);
+            font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+        .btn-telegram {
+            width: 100%; max-width: 300px; padding: 14px;
+            border: 1px solid rgba(79,172,254,0.3); border-radius: 16px;
+            background: rgba(79,172,254,0.1); color: var(--info);
+            font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+
+        .pending-wrap {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; text-align: center; gap: 16px; padding: 24px;
+        }
+        .pending-icon { font-size: 56px; margin-bottom: 8px; }
+        .pending-text { font-size: 18px; font-weight: 700; }
+        .pending-hint { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+        .spinner {
+            width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.08);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 16px 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .chat-header-info {
+            padding: 10px 16px; background: rgba(245,166,35,0.05);
+            border-bottom: 1px solid var(--border); font-size: 12px;
+            color: var(--text-secondary); text-align: center;
+        }
+        .chat-header-info span { color: var(--accent); font-weight: 600; }
+        .chat-area {
+            flex: 1; overflow-y: auto; padding: 14px 14px 6px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .message {
+            max-width: 92%; padding: 12px 14px; border-radius: 16px;
+            font-size: 13.5px; line-height: 1.55; animation: msgIn 0.3s ease;
+            position: relative; word-wrap: break-word;
+        }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .msg-user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(245,166,35,0.2), rgba(248,231,28,0.1));
+            border: 1px solid rgba(245,166,35,0.15);
+            color: var(--text); border-bottom-right-radius: 4px;
+        }
+        .msg-bot {
+            align-self: flex-start;
+            background: var(--glass); backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+        .msg-time { font-size: 10px; color: var(--text-secondary); margin-top: 6px; text-align: right; }
+        .copy-btn {
+            position: absolute; bottom: 4px; right: 6px;
+            background: rgba(255,255,255,0.08); border: none; border-radius: 6px;
+            padding: 3px 8px; color: var(--accent); font-size: 10px;
+            cursor: pointer; opacity: 0; transition: opacity 0.3s;
+        }
+        .message:hover .copy-btn { opacity: 1; }
+        .copy-btn:active { background: var(--accent); color: #000; }
+        .send-to-chat-btn {
+            position: absolute; bottom: 4px; right: 78px;
+            background: rgba(79,172,254,0.15); border: 1px solid rgba(79,172,254,0.3); border-radius: 6px;
+            padding: 3px 8px; color: var(--info); font-size: 10px;
+            cursor: pointer; opacity: 0; transition: opacity 0.3s;
+        }
+        .message:hover .send-to-chat-btn { opacity: 1; }
+        .send-to-chat-btn:active { background: var(--info); color: #fff; }
+        .typing-indicator {
+            align-self: flex-start; padding: 10px 14px;
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 16px; border-bottom-left-radius: 4px;
+            display: none; align-items: center; gap: 4px;
+        }
+        .typing-indicator.active { display: flex; }
+        .typing-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: typingBounce 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+
+        .templates-bar {
+            padding: 8px 12px; border-top: 1px solid var(--border);
+            background: var(--glass); backdrop-filter: blur(12px);
+            display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0;
+        }
+        .template-chip {
+            padding: 8px 14px; border-radius: 20px; white-space: nowrap;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: var(--text-secondary); font-size: 12px; cursor: pointer;
+            transition: all 0.2s; font-weight: 500;
+        }
+        .template-chip:hover, .template-chip.active {
+            background: linear-gradient(135deg, rgba(245,166,35,0.2), rgba(248,231,28,0.1));
+            border-color: rgba(245,166,35,0.3); color: var(--accent);
+        }
+
+        .templates-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+            padding: 8px 12px; max-height: 220px; overflow-y: auto;
+            border-top: 1px solid var(--border); background: rgba(0,0,0,0.15);
+        }
+        .template-card {
+            padding: 12px; border-radius: 14px;
+            background: var(--glass); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.2s;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .template-card:hover { border-color: rgba(245,166,35,0.3); background: rgba(245,166,35,0.08); }
+        .template-card .tc-title { font-size: 12px; font-weight: 600; color: var(--text); }
+        .template-card .tc-desc { font-size: 10px; color: var(--text-secondary); line-height: 1.4; }
+        .template-card .tc-cat { font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+        .input-area {
+            padding: 10px 12px 16px;
+            border-top: 1px solid var(--border);
+            background: var(--glass); backdrop-filter: blur(12px);
+            display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+        }
+        .input-field {
+            flex: 1; padding: 11px 14px; border-radius: 14px;
+            border: 1px solid var(--border); background: rgba(0,0,0,0.25);
+            color: var(--text); font-size: 14px; outline: none;
+        }
+        .input-field::placeholder { color: var(--text-secondary); }
+        .send-btn {
+            width: 42px; height: 42px; border-radius: 14px;
+            border: none; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #0a0e27; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s; flex-shrink: 0;
+        }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .send-btn:active:not(:disabled) { transform: scale(0.92); }
+
+        .admin-screen { padding: 16px; }
+        .admin-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .admin-title { font-size: 20px; font-weight: 700; }
+        .back-btn {
+            padding: 8px 14px; border-radius: 10px;
+            background: var(--glass); border: 1px solid var(--border);
+            color: var(--text); cursor: pointer; font-size: 12px;
+        }
+        .stats-row {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 16px; padding: 14px; text-align: center;
+        }
+        .stat-num { font-size: 22px; font-weight: 800; color: var(--accent); }
+        .stat-label { font-size: 10px; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .user-list { display: flex; flex-direction: column; gap: 10px; }
+        .user-card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 16px; padding: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .user-info { display: flex; flex-direction: column; gap: 3px; }
+        .user-name { font-weight: 600; font-size: 14px; }
+        .user-meta { font-size: 11px; color: var(--text-secondary); }
+        .status-badge {
+            padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-pending { background: rgba(255,165,2,0.12); color: var(--warning); }
+        .status-approved { background: rgba(0,208,132,0.12); color: var(--success); }
+        .status-rejected { background: rgba(255,71,87,0.12); color: var(--danger); }
+        .action-btns { display: flex; gap: 6px; margin-top: 6px; }
+        .btn-small {
+            padding: 6px 12px; border-radius: 8px; border: none;
+            font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+        .btn-approve { background: var(--success); color: #fff; }
+        .btn-reject { background: var(--danger); color: #fff; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: linear-gradient(135deg, #12183a, #0a0e27);
+            border: 1px solid var(--border); border-radius: 24px;
+            padding: 28px; width: 90%; max-width: 360px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+        }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+        .modal-hint { color: var(--text-secondary); font-size: 12px; text-align: center; margin-bottom: 18px; }
+        .password-input {
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: 1px solid var(--border); background: rgba(0,0,0,0.3);
+            color: var(--text); font-size: 16px; text-align: center;
+            letter-spacing: 4px; margin-bottom: 14px;
+        }
+        .modal-btn {
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: none; background: var(--accent); color: #0a0e27;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+        }
+        .modal-error { color: var(--danger); font-size: 12px; text-align: center; margin-top: 10px; display: none; }
+
+        .settings-panel {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px; margin-bottom: 20px;
+        }
+        .settings-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .settings-row { margin-bottom: 12px; }
+        .settings-row label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .settings-row input {
+            width: 100%; padding: 10px 12px; border-radius: 10px;
+            border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+            color: var(--text); font-size: 13px;
+        }
+        .settings-row input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+        .btn-save {
+            width: 100%; padding: 12px; border-radius: 12px;
+            border: none; background: var(--success); color: #fff;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+
+        .toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--success); color: #fff; padding: 12px 24px;
+            border-radius: 12px; font-size: 13px; font-weight: 600;
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: var(--danger); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+
+        .bot-info-bar {
+            background: rgba(79,172,254,0.08); border: 1px solid rgba(79,172,254,0.15);
+            border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 12px;
+            color: var(--text-secondary); line-height: 1.5;
+        }
+        .bot-info-bar strong { color: var(--info); }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="particles"></div>
+
+    <div class="app-container">
+        <div class="header">
+            <div>
+                <div class="logo">SALAM COWORK</div>
+                <div class="logo-sub">AI Ассистент • Grand Trust</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="user-nick" id="headerNick" style="display:none;"></span>
+                <button class="admin-btn" onclick="openAdmin()" title="Админ">⚙️</button>
+            </div>
+        </div>
+
+        <!-- Welcome -->
+        <div class="screen active" id="screenWelcome">
+            <div class="welcome-wrap">
+                <div class="welcome-logo">🤖</div>
+                <div class="welcome-title">SALAM COWORK</div>
+                <div class="welcome-sub">
+                    AI-ассистент для менеджеров Grand Trust Consulting.<br><br>
+                    Задавайте вопросы на русском — ответы для клиентов формируются на английском. Все цены и условия актуальны.
+                </div>
+                <button class="btn-primary" onclick="requestAccess()">🔐 Запросить доступ</button>
+                <button class="btn-secondary" onclick="showApiSetup()">⚡ Настройки API</button>
+                <button class="btn-telegram" onclick="showBotSetup()">📱 Настройка Telegram-бота</button>
+                <div style="margin-top:12px;font-size:11px;color:var(--text-secondary);">
+                    Grand Trust Consulting • Almaty, Kazakhstan
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="screen" id="screenPending">
+            <div class="pending-wrap">
+                <div class="pending-icon">⏳</div>
+                <div class="pending-text">Ожидание подтверждения</div>
+                <div class="pending-hint">
+                    Ваш ник: <span id="pendingNick" style="color:var(--accent);font-weight:700;"></span><br>
+                    Администратор должен одобрить доступ.<br>
+                    Пожалуйста, подождите...
+                </div>
+                <div class="spinner"></div>
+                <button class="btn-primary" onclick="checkApproval()" style="max-width:220px;font-size:13px;">🔄 Проверить статус</button>
+            </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="screen" id="screenChat" style="padding:0;">
+            <div class="chat-header-info">
+                💡 Пишите вопрос на русском — ответ для клиента на английском • <span id="apiStatusText">AI API подключен</span>
+            </div>
+            <div class="chat-area" id="chatArea"></div>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+            </div>
+            <div class="templates-bar" id="templateBar"></div>
+            <div class="templates-grid" id="templateGrid"></div>
+            <div class="input-area">
+                <input type="text" class="input-field" id="chatInput" placeholder="Вопрос менеджера на русском..." onkeypress="if(event.key==='Enter')sendMessage()">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+
+        <!-- Admin -->
+        <div class="screen admin-screen" id="screenAdmin">
+            <div class="admin-header">
+                <div class="admin-title">👑 Админ-панель</div>
+                <button class="back-btn" onclick="backFromAdmin()">← Назад</button>
+            </div>
+
+            <div class="settings-panel">
+                <div class="settings-title">🤖 Telegram Bot</div>
+                <div class="bot-info-bar">
+                    <strong>Ваш бот:</strong> @salam_cowork_bot (или укажите свой)<br>
+                    Для связи Mini App с ботом используйте кнопку Menu в BotFather.<br>
+                    Приложение отправляет ответы обратно в чат через Telegram WebApp API.
+                </div>
+                <div class="settings-row">
+                    <label>Bot Token (для инфо, не хранится в коде)</label>
+                    <input type="text" readonly value="8229427219:AAGasg-fm3rVu72GoADTk7vbgf7WWYeHYpk" style="opacity:0.6;">
+                </div>
+                <button class="btn-save" onclick="showBotSetup()">📖 Инструкция по настройке бота</button>
+            </div>
+
+            <div class="settings-panel">
+                <div class="settings-title">🔌 Настройки OpenAI API</div>
+                <div class="settings-row">
+                    <label>API Endpoint URL</label>
+                    <input type="text" id="apiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+                </div>
+                <div class="settings-row">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-..." value="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">
+                </div>
+                <div class="settings-row">
+                    <label>Модель</label>
+                    <input type="text" id="apiModel" placeholder="gpt-4o / gpt-3.5-turbo" value="gpt-4o-mini">
+                </div>
+                <button class="btn-save" onclick="saveApiSettings()">💾 Сохранить настройки API</button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Всего</div></div>
+                <div class="stat-card"><div class="stat-num" id="statPending">0</div><div class="stat-label">Ожидают</div></div>
+                <div class="stat-card"><div class="stat-num" id="statApproved">0</div><div class="stat-label">Активные</div></div>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Пользователи системы:</div>
+            <div class="user-list" id="adminUserList"></div>
+        </div>
+
+        <!-- Bot Setup Modal -->
+        <div class="modal-overlay" id="botSetupModal">
+            <div class="modal-box" style="max-width:420px;">
+                <div class="modal-title">📱 Настройка Telegram-бота</div>
+                <div class="modal-hint" style="text-align:left;font-size:12px;line-height:1.6;">
+                    <strong>Шаг 1.</strong> Откройте @BotFather и создайте бота (или используйте существующий)<br><br>
+                    <strong>Шаг 2.</strong> Отправьте /mybots → выберите бота → Bot Settings → Menu Button → Configure menu button<br><br>
+                    <strong>Шаг 3.</strong> Укажите:<br>
+                    • <strong>Name:</strong> SALAM COWORK<br>
+                    • <strong>Link:</strong> URL где размещен этот HTML-файл<br><br>
+                    <strong>Шаг 4.</strong> Для серверной обработки используйте Python-скрипт (см. ниже)<br><br>
+                    <strong>Важно:</strong> Токен бота <span style="color:var(--danger);">НЕЛЬЗЯ</span> хранить в клиентском коде. Используйте backend.
+                </div>
+                <button class="modal-btn" onclick="document.getElementById('botSetupModal').classList.remove('active')">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal-box">
+            <div class="modal-title">🔐 Вход в админку</div>
+            <div class="modal-hint">Введите пароль администратора</div>
+            <input type="password" class="password-input" id="adminPass" placeholder="••••••••" onkeypress="if(event.key==='Enter')verifyAdmin()">
+            <button class="modal-btn" onclick="verifyAdmin()">Войти</button>
+            <div class="modal-error" id="passError">Неверный пароль</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+<script>
+// ===================== KNOWLEDGE BASE (ENGLISH — FOR CLIENT REPLIES) =====================
+const KNOWLEDGE_BASE = `
+GRAND TRUST CONSULTING — OFFICIAL KNOWLEDGE BASE
+
+COMPANY PROFILE:
+OMI Enterprise / Grand Trust Consulting. Global Mobility & Business Solutions.
+Headquarters: Ritz Carlton Plaza, Almaty, Kazakhstan.
+Email: info@grandtrustconsulting.com. Working hours: Mon–Sat 09:00–20:00 GMT+5.
+Core Values: Speed, Transparency, Borderless. Operations: Central Asia, Europe, Middle East, Africa.
+Specializing in: International talent placement, workforce mobility, enterprise logistics, supply chain coordination, business setup, administrative support across jurisdictions, premium visa & relocation consulting.
+
+KAZAKHSTAN VISA SERVICES:
+C3 Work Visa (1 year): $550. B2 Business/Tourist Visa: $400.
+Payment: strictly after physical receipt of visa (72-hour window).
+Express processing: +$100 for 48-hour service.
+Included: Document preparation, consulate appointment booking, application review by lawyer, status tracking until approval, B2 to C3 conversion for work visa.
+Accepted payments: Western Union, Cryptocurrency (USDT/BTC).
+
+C3 WORK VISA PROCESS (1 year):
+Step 1: Entry Visa B2. We prepare B2 visa (business/guest category). Processing: 2-3 working days. Serves as legal entry document.
+Step 2: Conversion to C3. Upon arrival in Kazakhstan, we convert B2 to full C3 Work Visa (1-year validity). Processing: 3-5 days locally. No additional embassy visits required.
+Price $550 covers both phases — B2 entry and C3 conversion. No hidden fees. Standard legal procedure in Kazakhstan. You arrive legally, status updated to worker within days.
+
+DOCUMENT CHECKLIST KAZAKHSTAN:
+1. Passport — clear photo/scan of bio data page, valid minimum 6 months.
+2. Photo — size 3×4cm (standard Kazakhstan size), background white only, face no glasses, neutral expression.
+Once received, processing starts immediately (2-3 days).
+
+GENERAL PROCESS (Non-KZ):
+1. Document submission (Passport scan + Photo). 2. Payment initiation (50% to start for non-KZ; $0 upfront for Kazakhstan). 3. Preparation (1-2 days). 4. Submission (tracking number provided). 5. Approval (remaining payment due after receipt).
+Current timeline: 3-5 working days for Kazakhstan. Others: 7-21 days.
+
+GLOBAL PRICING:
+Kazakhstan (Pay after visa — 72h window): C3 Work $550, B2 Business $400.
+Europe & Balkans (50% upfront / 50% on approval): Serbia $750, Albania $950, Montenegro $900, Moldova $650, Austria $950, Italy $1,000, Spain $950, Germany $1,100, France $1,050, Portugal $900, Greece $850, Czech Republic $800, Hungary $800, Poland $850.
+North America & Asia (50% upfront / 50% on approval): Canada $1,200, USA $1,200, New Zealand $700, South Korea $750.
+Payment Methods: Western Union | Crypto (USDT/BTC). Timeline: Kazakhstan 2-3 days | Others 7-21 days.
+
+COUNTRY DETAILS:
+CANADA: Total $1,200. $600 upfront (legal retainers, government fees, document authentication), $600 upon approval. Timeline 14-21 days (standard elsewhere 6-18 months). Included: Express Entry profile OR Work/Study permit, job offer assistance for work streams, IELTS prep strategy if needed, full legal representation, post-landing guidance. For serious applicants with higher budgets.
+
+USA: Total $1,200. $600 upfront (legal preparation, consulate fees, document review), $600 upon approval. Timeline 14-21 days. Included: B1/B2 Business & Tourist visa, F1 Student visa with post-grad work strategy, work visa pathways H1B/L1 consultations, interview coaching, document verification and DS-160 form handling. African passports receive extra scrutiny at US embassies — we build profile so strong that passport origin becomes a manageable detail, not a barrier.
+
+SERBIA: Total $750. $375 upfront (legal retainers, AMS registration, notary costs), $375 upon approval. Timeline 7-10 days. Included: Temporary Residence Permit (work, business, family reunification), company formation assistance, document legalization and translation, local bank account setup, accommodation verification. Why Serbia: EU candidate status, fast Schengen access coming, low cost of living, tax-friendly for business.
+
+ALBANIA: Total $950. $475 upfront (legal retainers, state duty deposits, notary costs), $475 upon approval. Timeline 10-14 days. Included: Unique Permit (Work/Residence), company formation assistance, document legalization and translation, tax registration guidance (0% tax for certain IT/freelance categories), local bank account and accommodation setup.
+
+MOLDOVA: Total $650. $325 upfront (legal retainers, state duties, notary costs), $325 upon approval. Timeline 10-14 days. Included: Temporary Residence Permit (work, business, family basis), company registration help, Tax ID setup (tax breaks for IT and freelancers), local bank account opening, accommodation verification. Why Moldova: Cheapest European option, strategic location between EU and Ukraine, access to Romanian citizenship pathway.
+
+AUSTRIA: Total $950. $475 upfront (legal retainers, AMS registration, document legalization), $475 upon approval. Timeline 14-21 days. Included: Red-White-Red Card OR EU Blue Card strategy, legal representation and translation (German & English), job contract verification, local registration support, bank account and accommodation setup.
+
+ITALY: Total $1,000. $500 upfront (legal retainers, consular fees, document authentication), $500 upon approval. Timeline 14-21 days. Included: Elective Residency Permit (remote workers/investors) OR Work Visa (employment-based), legal representation and translation, Tax code (Codice Fiscale) registration, accommodation verification, bank account setup guidance.
+
+SPAIN: Total $950. $475 upfront (legal prep, consulate fees, document review), $475 upon approval. Timeline 10-14 days. Included: Schengen (C) or National (D) visa processing, document translation and certification, health insurance enrollment (min €30,000), accommodation verification, NIE (Foreigner ID) application support.
+
+MONTENEGRO: Total $900. $450 upfront (legal retainers, administrative fees, notary costs), $450 upon approval. Timeline 10-14 days. Included: Temporary Residence Permit (work, business, property investment), company formation assistance, document legalization and translation, real estate verification support (if investment route), post-arrival registration with local authorities.
+
+NEW ZEALAND: Total $700. $350 upfront (advisor fees, medical checks, government costs), $350 upon approval. Timeline 14-21 days. Included: Work Visa (Essential Skills or Accredited Employer), job offer verification, document prep and translation, medical check coordination, post-arrival setup (bank, IRD number, accommodation advice).
+
+SOUTH KOREA: Total $750. $375 upfront (legal prep, sponsor verification, embassy fees), $375 upon approval. Timeline 10-14 days. Included: Work Visa (E-7 for specialists, E-9 for manufacturing/logistics), job contract review, document translation (Korean & English), medical check coordination, post-arrival support (alien registration card, bank, SIM).
+
+JOB LISTINGS KAZAKHSTAN:
+Warehouse — $1,100/month (5/2 schedule, meals, transport). Duties: packing, sorting, inventory, light forklift (training provided). Overtime 1.5x. Free lunch. Transport from city center. Housing assistance. Requirements: physical fitness, basic English/Russian preferred but not mandatory. C3 visa provided.
+Construction — $1,200/month (5/2, housing on-site, meals). Projects: commercial buildings, infrastructure, residential. Duties: general labor, scaffolding, concrete work, site maintenance. Safety equipment and uniform provided. Overtime 1.5x. Transport provided. No experience required — training provided. C3 visa arranged.
+Solar Installer — $1,300-1,500/month (housing at site). Schedule 6/1. Location: commercial solar farms & industrial installations (Almaty region). Duties: install photovoltaic panels, DC/AC electrical connections, inverter setup, system testing, safety compliance. Performance bonuses for early completion. Growth path to team lead ($1,800+). C3 visa.
+English/French Teacher — $1,500/month (flexible, 20-30 teaching hours/week). Students: adults, business professionals, corporate clients. Curriculum provided. Perks: $15-25/hour private lessons, bonuses for student retention, modern facilities, no Russian required, professional development workshops. Requirements: fluent English or French, Bachelor's degree (any field), TEFL/TESOL preferred but not mandatory.
+Truck Driver — $1,400/month (local routes). Schedule 5-6/1-2. Routes: local deliveries, intercity logistics, warehouse transfers. Company truck + fuel card. Insurance covered. Overtime pay for long hauls. Requirements: valid CE license (heavy truck/trailer), 1+ year experience preferred (entry-level options available), clean driving record. C3 visa handled. Upgrade path: local Kazakhstan → international routes (Serbia/EU) at €2,800+.
+Courier — $900-1,100/month (flexible hours, immediate start). Duties: food and package delivery, day and night shifts. Immediate start, performance bonuses, fuel allowance if using own vehicle, tips from customers. Own bike or car is a plus but not mandatory. Physical fitness. C3 visa arranged.
+Football Professional — $1,200-3,000/month (varies by division). Contracts minimum 6 months. Clubs: Premier League and Division 1. Housing provided by club, meals covered, medical insurance, transport to training grounds. Requirements: player CV and video highlights, medical fitness certificate, passport copy. We secure official club invitation for visa.
+Medical Clinic Administrator — $1,200-1,400/month (standard office hours). Duties: operations management, patient coordination and scheduling, staff oversight, inventory and supply management. Requirements: healthcare background + administrative experience, basic English or Russian, organizational skills. C3 visa provided.
+IT Specialist — $1,800-2,500/month (partial remote).
+
+JOB LISTINGS OTHER COUNTRIES:
+Serbia: International Truck Driver — €2,800-3,200/month (EU routes).
+Albania: Regional Truck Driver — €2,400-2,900/month (Balkan routes).
+Canada LMIA-based: Warehouse/Forklift CAD $2,800-3,500, Construction/Skilled Trades CAD $3,000-4,500, Caregiver/Home Support CAD $2,800-3,500 (pathway to PR), Long-Haul Truck Driver CAD $4,000-6,000, Food Processing CAD $2,600-3,200. Visa + job placement $1,200 total. Timeline 14-21 days after job offer secured.
+New Zealand: Farm Worker $2,200-2,600 (housing often included), Construction Laborer $2,400-2,800 (union rates), Warehouse Operative $2,000-2,400 (forklift cert bumps pay), Hospitality Staff $1,800-2,200 + tips, Truck Driver $2,800-3,200 (Class 4/5 license), Caregiver/Aged Care $2,200-2,600 (pathway to PR). All positions: legal work visa (Accredited Employer), minimum 30 hours/week guaranteed, holiday pay + sick leave. Visa cost $700 total (50/50 payment).
+Italy: Agriculture/Harvest €1,200-1,500 (housing + meals), Hotel/Restaurant €1,100-1,400 + tips, Construction/Renovation €1,400-1,800, Elderly Caregiver €1,300-1,600 (live-in, save entire salary), Food Processing Factory €1,200-1,500. All include legal work contract. We handle "decreto flussi" quotas. Visa cost $1,000 total (50/50). Bonus: Poland Factory Assembly $1,100/month, Hungary Warehouse Forklift $1,200/month.
+
+SUPPORT SERVICES:
+Accommodation Arranged: Upon arrival in Almaty, move directly into furnished accommodation. Options: shared apartment (2-3 international workers) — economical, instant community; private studio — personal space, quieter, slightly higher cost. All units include bed, desk, wardrobe, high-speed WiFi, kitchen for cooking, first month utilities covered by us, safe neighborhood near transport. Photos and exact address sent before ticket purchase.
+Airport Welcome Service: We personally meet you at Almaty Airport. Procedure: send flight number and arrival time 48 hours before landing, representative greets you with name sign at baggage claim, transport to accommodation provided, check-in assistance (keys, WiFi, utilities explained), local SIM card setup. No taxi negotiations, no getting lost. Door-to-door service.
+Flight Booking Support: We do not sell tickets directly (not a travel agency), but partner with airline consolidators offering 10-20% below market rates. To check options provide departure city and planned travel date. We check inventory and send competitive fares within hours. You book directly with airline — no markup, no hidden fees. Complimentary service for visa clients.
+
+TRUST & VERIFICATION:
+Legitimacy: You pay nothing until visa stamp is in your passport. We provide official tracking numbers from Kazakhstan consulate — verifiable directly. 500+ successful cases with client referrals available upon request. Website link and video proof of recent approvals available. If we were not legitimate, we would not offer "pay after approval" model.
+Proof materials: Website link with case tracking, video confirmation showing physical visa stamp with your name and current date, direct consulate verification via E-visa number.
+Why pay after: We invest first (legal fees, consulate appointments, document preparation). You see result first (visa in passport). You pay after (within 72 hours). 98% of clients pay within 24 hours of receipt.
+
+FREQUENTLY ASKED QUESTIONS:
+Weak passport: African passports face additional scrutiny, but "weak" simply means stronger application required — not impossible. We specialize in difficult passports. Financial proof presented strategically (business turnover vs static balance). Custom cover letters addressing specific situations. Strategic presentation of travel history. Interview preparation if required. 98% of African clients approved because we understand exactly what immigration authorities look for. Send passport scan for honest assessment.
+Insufficient funds: For Kazakhstan work visas, authorities evaluate employment contract (which we help secure), sponsor financial capacity if applicable, business activity (bank statements showing movement, not frozen lump sums). We do not require "rich person" bank statements. Need to demonstrate you will not become a burden. If coming to work, employer's guarantee carries more weight than personal savings. If freelancer, we present client contracts and income flow. Every case is unique. Send what you actually have and we will advise.
+Family reunification: Available after first 6 months on C3 visa. Process: you establish yourself (apartment, stable job), we apply for dependent visas for spouse and children, they join you with residence permits tied to your work visa. Family bonus: 20% discount on total package when applying together as family unit. We recommend arriving alone first to settle, then bringing family once stable.
+Language barrier: You will manage fine with English alone. Business districts (Almaty, Astana) are very international — English works in offices. Employers often provide translators initially. We provide survival phrasebook and connect you with African community networks. Google Translate works offline for daily shopping. Many clients work in English-speaking environments for months while learning Russian. Language is not required for visa process — we handle all paperwork. Optional tutors available after arrival.
+Refusal policy: Zero financial risk. If refusal occurs (2% chance): you owe nothing, we absorb preparation costs. We analyze refusal reason (sometimes fixable with additional documents). If fixable: we reapply immediately at no extra charge. If not fixable: we discuss alternative countries (Dubai, Turkey, etc.). You only pay when you see approved visa. If you never get it, you never pay. This is why we screen cases carefully upfront. If we take your case, we are confident it will succeed.
+
+AGENT & PARTNERSHIP:
+Agent pricing: Kazakhstan B2 Business Visa retail $400, agent price $350 (save $50 per client). Kazakhstan C3 Work Visa (1 Year) retail $550, agent price $500 (save $50 per client). Why partner: instant $50 margin on every visa, you set final price to your clients, zero upfront costs for partnership, priority processing for agent referrals.
+B2B partnership: We are open for B2B collaboration with agents and consultants worldwide. Official B2B agreements — no conditions, no hidden clauses.
+B2B documents needed: Option 1 Company/Agency — company name, director's full name, company registration number (Tax ID/License), country of registration. Option 2 Individual Agent — full name (as in passport), passport number, country of residence, WhatsApp number (primary contact). Information required for internal due diligence. All data stored securely and never shared with third parties. Agreement prepared within 24 hours.
+
+PROCESS MANAGEMENT:
+Interest check: Are you ready to start the visa process now, or still comparing options?
+Next steps: Perfect. Let me send over the full breakdown — pricing, timeline, and your path to that visa.
+Close deal: Payment received. Visa fully confirmed. We send flight recommendations, airport pickup contacts, first week survival guide (SIM, apartment, bank), personal contact for emergencies while settling in. $50 credit for every referral that completes.
+Follow-up after arrival: Just checking in — how is Kazakhstan treating you? Job going okay? Apartment sorted? If hitting any walls (payment issues, apartment problems, paperwork), hit us up. We support clients even after visa is done — you are part of the GT family.
+Payment due: Your visa has been approved and is ready for collection. Amount $[Amount]. Payment window 72 hours from receipt. Methods: Western Union, Crypto (USDT/BTC). Please send payment receipt here immediately upon transfer.
+Payment reminder: Quick reminder — your visa payment ($[Amount]) is due within next [X] hours (72-hour window). No pressure, just making sure it does not slip your mind while you are celebrating. Send via Western Union or Crypto (USDT). Hit us back with receipt once done.
+Timeline: Once you send documents (passport scan + photo), entire process takes just 2-3 working days. Day 1: we prep file and lawyer reviews. Day 2: submission to consulate. Day 3: approval and visa ready for pickup. No months of waiting. By Friday you could be holding your visa.
+Group of 4: 4 Work Visas C3 (1 year each). Total cost $2,200 ($550 per person). Package includes entry visas B2 for all four, work visa conversion C3 for all four, same processing timeline 2-3 days, group coordination support. Payment only after all 4 visas are approved (72h window). Perfect for teams, friends, or families moving together.
+Family discount: When applying for visas together as family unit, you receive 20% discount on total package. We recommend arriving alone first to settle in, then bringing family once stable. We handle family paperwork too.
+
+MISCELLANEOUS:
+General help: Available services — visa processing (Kazakhstan, Europe, Canada, USA, Asia), job placement support, document preparation, airport pickup & housing, flight booking assistance. Please specify destination and purpose (work/study/business/relocate).
+Prepayment $700: To get case moving, need $700 USD upfront. Covers legal representation and case management, government filing fees, document preparation and translation. Balance due upon visa approval. Payment methods: Western Union, Crypto (USDT/BTC). Send receipt right here in chat and we will launch file the same day.
+`;
+
+// ===================== TEMPLATES (RUSSIAN UI LABELS, ENGLISH AI PROMPTS) =====================
+const TEMPLATES = [
+    { id: "welcome", cat: "intro", title: "Приветствие", desc: "Первое приветствие клиенту", prompt: "Write a professional welcome message from Grand Trust Consulting. Mention: premium visa solutions for African professionals, pay-after-visa model (72h window for Kazakhstan), 2-3 day processing, 98% approval rate. Ask how we can assist. Business tone, professional." },
+    { id: "qualify", cat: "intro", title: "Квалификация", desc: "Уточнить направление клиента", prompt: "Write a message to clarify the client's interest: Kazakhstan (C3 $550 / B2 $400) or other countries (USA, Canada, Dubai, Europe). Mention that for Kazakhstan payment is only after visa receipt. Ask them to specify their target destination. Professional business tone." },
+    { id: "kz_prices", cat: "kz", title: "Цены Казахстан", desc: "C3 $550, B2 $400, условия", prompt: "Write the current Kazakhstan visa prices: C3 Work Visa (1 year) $550, B2 Business/Tourist $400. What's included: document preparation, consulate booking, lawyer review, status tracking, B2 to C3 conversion. Payment terms: after physical receipt (72h window). Express +$100. Keep all numbers exact. Professional tone." },
+    { id: "kz_payterms", cat: "kz", title: "Условия оплаты", desc: "Оплата после визы, методы", prompt: "Write payment terms: payment only after receiving approved visa in passport. 72 hours (3 days) to pay after receipt. Accepted: Western Union and Crypto (USDT/BTC). Zero risk — result first, then payment. Professional tone." },
+    { id: "kz_process", cat: "kz", title: "Общий процесс", desc: "5 шагов оформления", prompt: "Write the general process: 1) Document submission (passport + photo), 2) Payment (50% for non-KZ, $0 for Kazakhstan), 3) Preparation (1-2 days), 4) Submission (tracking number), 5) Approval (balance after receipt). Timeline 3-5 working days for Kazakhstan. Professional tone." },
+    { id: "kz_c3process", cat: "kz", title: "Процесс C3", desc: "B2 → C3 конвертация", prompt: "Write the C3 Work Visa process (1 year). Step 1: Entry Visa B2 (business/guest), 2-3 working days. Step 2: Conversion to C3 after arrival in Kazakhstan, 3-5 days locally, no embassy re-visits. Price $550 covers both phases. Standard legal procedure. Professional tone." },
+    { id: "kz_docs", cat: "kz", title: "Документы на C3", desc: "Чек-лист и требования", prompt: "Write document request for C3: passport biodata page (high-res scan), photo 3×4cm (white background, no glasses, neutral expression). After receipt we launch B2 (2-3 days), then C3 conversion after arrival. All-inclusive $550. Professional tone." },
+    { id: "kz_b2docs", cat: "kz", title: "Документы на B2", desc: "Требования для бизнес-визы", prompt: "Write document request for B2 Business/Tourist: passport biodata page (high-res scan), photo 3×4cm (white background, no glasses). Processing 2-3 working days. B2 for short-term visits 30-90 days. Cost $400. Professional tone." },
+    { id: "global_prices", cat: "global", title: "Прайс-лист всех стран", desc: "Полный список цен", prompt: "Write the complete price list. Kazakhstan (pay after): C3 $550, B2 $400. Europe & Balkans (50/50): Serbia $750, Albania $950, Montenegro $900, Moldova $650, Austria $950, Italy $1000, Spain $950, Germany $1100, France $1050, Portugal $900, Greece $850, Czech $800, Hungary $800, Poland $850. Americas & Asia (50/50): Canada $1200, USA $1200, New Zealand $700, South Korea $750. Payment: Western Union & Crypto. Timeline: KZ 2-3 days, Global 7-21 days. Keep every price exact. Professional tone." },
+    { id: "canada", cat: "country", title: "Канада", desc: "$1,200, LMIA, 14-21 дней", prompt: "Write about Canada: total cost $1,200 ($600 upfront + $600 on approval). Timeline 14-21 days (vs 6-18 months standard). Included: Express Entry or Work/Study permit, job offer assistance, IELTS prep if needed, full legal representation, post-landing guidance. For serious applicants with higher budgets. Professional tone." },
+    { id: "usa", cat: "country", title: "США", desc: "$1,200, B1/B2/F1, 14-21 дней", prompt: "Write about USA: $1,200 (50/50). Timeline 14-21 days. Included: B1/B2, F1 student with post-grad strategy, H1B/L1 consultations, interview coaching, DS-160 handling. African passports get extra scrutiny — we build profile so strong passport origin becomes manageable detail. Professional tone." },
+    { id: "serbia", cat: "country", title: "Сербия", desc: "$750, ВНЖ, 7-10 дней", prompt: "Write about Serbia: $750 (50/50), 7-10 days. Temporary Residence Permit (work, business, family reunification), company formation assistance, document legalization, local bank account, accommodation verification. Why Serbia: EU candidate, Schengen coming, low cost, tax-friendly. Professional tone." },
+    { id: "albania", cat: "country", title: "Албания", desc: "$950, Unique Permit, 10-14 дней", prompt: "Write about Albania: $950 (50/50), 10-14 days. Unique Permit (Work/Residence), company formation, tax registration (0% for certain IT/freelance), local bank account and accommodation setup. Professional tone." },
+    { id: "moldova", cat: "country", title: "Молдова", desc: "$650, самый доступный ЕС-роут", prompt: "Write about Moldova: $650 (50/50), 10-14 days. Temporary Residence Permit, company registration help, Tax ID (breaks for IT/freelancers), local bank account, accommodation verification. Cheapest European option, strategic location, path to Romanian citizenship. Professional tone." },
+    { id: "austria", cat: "country", title: "Австрия", desc: "$950, Red-White-Red Card", prompt: "Write about Austria: $950 (50/50), 14-21 days. Red-White-Red Card or EU Blue Card, legal representation and translation (German & English), job contract verification, local registration, bank and accommodation setup. Professional tone." },
+    { id: "italy", cat: "country", title: "Италия", desc: "$1,000, Elective Residency", prompt: "Write about Italy: $1,000 (50/50), 14-21 days. Elective Residency (remote workers/investors) or Work Visa, legal representation, Codice Fiscale registration, accommodation verification, bank setup guidance. Professional tone." },
+    { id: "spain", cat: "country", title: "Испания", desc: "$950, Schengen C/D, 10-14 дней", prompt: "Write about Spain: $950 (50/50), 10-14 days. Schengen C or National D visa, document translation and certification, health insurance (min €30,000), accommodation verification, NIE application support. Professional tone." },
+    { id: "montenegro", cat: "country", title: "Черногория", desc: "$900, ВНЖ, 10-14 дней", prompt: "Write about Montenegro: $900 (50/50), 10-14 days. Temporary Residence Permit (work, business, property investment), company formation, document legalization, real estate verification (if investment route), post-arrival registration. Professional tone." },
+    { id: "nz", cat: "country", title: "Новая Зеландия", desc: "$700, Work Visa, 14-21 дней", prompt: "Write about New Zealand: $700 (50/50), 14-21 days. Work Visa (Essential Skills or Accredited Employer), job offer verification, document prep, medical check coordination, post-arrival setup (bank, IRD, accommodation). Professional tone." },
+    { id: "korea", cat: "country", title: "Южная Корея", desc: "$750, E-7/E-9, 10-14 дней", prompt: "Write about South Korea: $750 (50/50), 10-14 days. Work Visa E-7 (specialists) or E-9 (manufacturing/logistics), job contract review, Korean/English translation, medical check, post-arrival support (ARC, bank, SIM). Professional tone." },
+    { id: "jobs_kz", cat: "jobs", title: "Вакансии Казахстан", desc: "Все позиции и зарплаты", prompt: "Write Kazakhstan job listings with salaries: Warehouse $1,100 (5/2, meals, transport), Construction $1,200 (on-site housing, meals), Solar Installer $1,300-1,500 (site housing), Teacher $1,500 (flexible), IT $1,800-2,500 (partial remote), Truck Driver $1,400 (local routes), Courier $900-1,100, Footballer $1,200-3,000 (6+ month contracts), Medical Admin $1,200-1,400. All with legal C3 work visa. Professional tone." },
+    { id: "jobs_canada", cat: "jobs", title: "Работа в Канаде", desc: "LMIA позиции", prompt: "Write about Canada LMIA jobs: Warehouse/Forklift CAD $2,800-3,500, Construction/Skilled Trades CAD $3,000-4,500, Caregiver CAD $2,800-3,500 (PR pathway), Long-Haul Driver CAD $4,000-6,000, Food Processing CAD $2,600-3,200. Process: connect to LMIA-approved employer, secure job offer, process work permit. Visa + placement $1,200. 14-21 days after offer. Professional tone." },
+    { id: "jobs_nz", cat: "jobs", title: "Работа в Новой Зеландии", desc: "Farm, construction, care", prompt: "Write New Zealand jobs: Farm Worker $2,200-2,600 (housing often included), Construction $2,400-2,800 (union rates), Warehouse $2,000-2,400 (forklift = more pay), Hospitality $1,800-2,200 + tips, Truck Driver $2,800-3,200 (Class 4/5), Caregiver $2,200-2,600 (PR pathway). All: legal Accredited Employer visa, 30+ hrs/week guaranteed, holiday + sick pay. Visa $700 (50/50). Professional tone." },
+    { id: "jobs_italy", cat: "jobs", title: "Работа в Италии", desc: "Сезонные и постоянные", prompt: "Write Italy jobs: Agriculture/Harvest €1,200-1,500 (housing + meals), Hotel/Restaurant €1,100-1,400 + tips, Construction/Renovation €1,400-1,800, Elderly Caregiver €1,300-1,600 (live-in, save full salary), Food Factory €1,200-1,500. All legal contracts via decreto flussi. Visa $1,000 (50/50). Bonus: Poland Assembly $1,100, Hungary Forklift $1,200. Professional tone." },
+    { id: "housing", cat: "support", title: "Проживание", desc: "Жилье в Алматы", prompt: "Write about accommodation in Almaty: move straight into furnished housing upon arrival. Options: shared apartment (2-3 workers) — budget-friendly, community; private studio — personal space. All units include bed, desk, wardrobe, WiFi, kitchen, first month utilities covered by us, safe neighborhood near transport. Photos and address sent before ticket purchase. Professional tone." },
+    { id: "airport", cat: "support", title: "Встреча в аэропорту", desc: "Almaty Airport pickup", prompt: "Write about Almaty Airport pickup: we meet you personally. Procedure: send flight details 48h before, representative with name sign at baggage claim, transport to accommodation, check-in help (keys, WiFi, utilities), SIM card setup. No taxi hassles. Door-to-door service. Professional tone." },
+    { id: "flights", cat: "support", title: "Помощь с билетами", desc: "Консолидаторы -10-20%", prompt: "Write about flight booking support: we are not a travel agency but partner with consolidators offering 10-20% below market rates. Provide departure city and travel date, we check inventory and return quotes within hours. You book directly with airline — zero markup. Complimentary for visa clients. Professional tone." },
+    { id: "legit", cat: "trust", title: "Проверка легитимности", desc: "Почему нам можно доверять", prompt: "Write about legitimacy: you pay nothing until visa stamp is in your passport. Official consulate tracking numbers provided — verifiable directly. 500+ successful cases, references on request. Website and video proof of recent approvals available. Scammers demand upfront money — we inverted that. Professional tone." },
+    { id: "trust_pay", cat: "trust", title: "Почему оплата после", desc: "Инверсия рисков", prompt: "Write why we use pay-after model: we inverted traditional risk structure. We invest first (legal fees, consulate appointments, document prep). You see result first (visa in passport). You pay after (within 72h). 98% pay within 24h of receipt. Professional tone." },
+    { id: "faq_passport", cat: "faq", title: "Слабый паспорт", desc: "Африканские паспорта", prompt: "Write about weak passports: African passports face extra scrutiny, but 'weak' means stronger application needed — not impossible. We specialize in difficult passports: strategic financial proof (business turnover vs static balance), custom cover letters, travel history framing, interview coaching. 98% of African clients approved. Send passport scan for honest assessment. Professional tone." },
+    { id: "faq_money", cat: "faq", title: "Недостаточно средств", desc: "Требования к финансам", prompt: "Write about insufficient funds: Kazakhstan evaluates employment contract (we arrange), sponsor capacity, banking activity (movement matters, not frozen balances). No need to be wealthy — demonstrate you won't be a burden. Employer's guarantee > personal savings for workers. Freelancers: we use client contracts. Professional tone." },
+    { id: "faq_family", cat: "faq", title: "Воссоединение семьи", desc: "Через 6 месяцев на C3", prompt: "Write about family reunification: available after 6 months on C3. Process: settle first (apartment, stable job), we file dependent visas for spouse and children, they arrive on residence permits tied to your work visa. Family bonus: 20% discount when applying together. Recommend arriving solo first, then reuniting. Professional tone." },
+    { id: "faq_lang", cat: "faq", title: "Языковой барьер", desc: "Английский в Казахстане", prompt: "Write about language barrier: English is sufficient professionally in Kazakhstan. Business districts Almaty/Astana are international — English works in offices. Employers often provide initial translators. We provide survival phrasebook and African community networks. Google Translate works offline. Many clients work in English-only environments for months while learning Russian. Visa paperwork handled by us. Professional tone." },
+    { id: "faq_refusal", cat: "faq", title: "Политика отказа", desc: "Нулевой финансовый риск", prompt: "Write refusal policy: zero financial risk. If refused (2% chance): you owe $0, we absorb prep costs. We analyze refusal reason (sometimes fixable with extra documents). If fixable — reapply free. If not — discuss alternatives (Dubai, Turkey, etc.). You only pay when you see approved visa. We pre-screen carefully because we share the risk. Professional tone." },
+    { id: "agent_price", cat: "agent", title: "Цены для агентов", desc: "B2B скидки", prompt: "Write agent pricing: Kazakhstan B2 retail $400 → agent $350 (earn $50). Kazakhstan C3 retail $550 → agent $500 (earn $50). Benefits: $50 instant margin, you set final price, zero partnership fees, priority queue for your clients. Professional tone." },
+    { id: "agent_partner", cat: "agent", title: "B2B партнерство", desc: "Сотрудничество", prompt: "Write about B2B partnership: open to agents and consultants worldwide. Official B2B contracts available — no hidden terms, no fine print. Message us to discuss. Professional tone." },
+    { id: "about", cat: "about", title: "О компании", desc: "Grand Trust Consulting", prompt: "Write about the company: OMI Enterprise / Grand Trust Consulting. Global Mobility & Business Solutions. Specializing in international talent placement, workforce mobility, enterprise logistics, cross-border business setup, premium visa & relocation consulting. Regions: Central Asia, Europe, MENA, Africa. Values: Speed | Transparency | Borderless. HQ: Ritz Carlton Plaza, Almaty, Kazakhstan. Professional tone." },
+    { id: "contact", cat: "about", title: "Контакты", desc: "Связаться с нами", prompt: "Write contact info: WhatsApp [number], Email info@grandtrustconsulting.com, Working hours Mon–Sat 09:00–20:00 GMT+5. Response time: usually within 30 minutes during business hours. Professional tone." },
+    { id: "payment_due", cat: "process", title: "Запрос оплаты", desc: "Виза одобрена", prompt: "Write payment request: visa approved and ready for collection. Amount $[Amount]. Payment window: 72 hours from receipt. Methods: Western Union, Crypto (USDT/BTC). Please send receipt immediately after transfer. Professional tone." },
+    { id: "timeline", cat: "process", title: "Сроки оформления", desc: "2-3 рабочих дня", prompt: "Write about timeline: after sending documents (passport + photo), entire process takes 2-3 working days. Day 1: file prep & lawyer review. Day 2: consulate submission. Day 3: approval and visa ready for pickup. No months of waiting. Professional tone." },
+    { id: "group4", cat: "process", title: "Групповая заявка", desc: "4 человека, $2,200", prompt: "Write about group processing (4 people): 4 Work Visas C3 (1 year each). Total $2,200 ($550 per person). Includes: entry B2 for all four, C3 conversion for all four, same 2-3 day timeline, group coordination. Payment only after all 4 approved (72h window). Perfect for teams, friends, or families. Professional tone." },
+    { id: "prepayment", cat: "misc", title: "Предоплата $700", desc: "Для запуска кейса", prompt: "Write about $700 prepayment: required to open case. Covers legal representation and case management, government filing fees, document preparation and translation. Balance due upon visa approval. Payment: Western Union, Crypto (USDT/BTC). Send receipt here — we launch file same day. Professional tone." },
+];
+
+const TEMPLATE_CATS = {
+    intro: "👋 Вступление",
+    kz: "🇰🇿 Казахстан",
+    global: "🌍 Цены",
+    country: "📍 Страны",
+    jobs: "💼 Вакансии",
+    support: "🛟 Поддержка",
+    trust: "🛡️ Доверие",
+    faq: "❓ FAQ",
+    agent: "🤝 Агентам",
+    about: "🏢 О нас",
+    process: "⚙️ Процесс",
+    misc: "📎 Другое"
+};
+
+// ===================== APP CONFIG =====================
+const ADJECTIVES = ["Swift", "Bright", "Clever", "Brave", "Lucky", "Golden", "Happy", "Wise", "Cool", "Noble", "Quick", "Silent", "Bold", "Calm", "Royal", "Smart", "Wild", "Keen", "Grand", "Sharp", "Mighty", "Gentle", "Fierce", "Proud", "Magic"];
+const ANIMALS = ["Eagle", "Tiger", "Falcon", "Shark", "Wolf", "Bear", "Lion", "Hawk", "Fox", "Panda", "Otter", "Moose", "Lynx", "Cobra", "Bison", "Stallion", "Leopard", "Panther", "Raven", "Cheetah", "Dragon", "Jaguar", "Buffalo", "Rhino", "Gorilla"];
+const ADMIN_PASSWORD = "GTsalam2024!";
+
+// Default API settings with user's key
+const DEFAULT_API = {
+    endpoint: "https://api.openai.com/v1/chat/completions",
+    key: "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",
+    model: "gpt-4o-mini"
+};
+
+let currentUser = null;
+let currentTemplateCat = "all";
+let adminAuthenticated = false;
+let apiSettings = { ...DEFAULT_API };
+let isTyping = false;
+let tgWebApp = null;
+let tgUser = null;
+
+function init() {
+    // Init Telegram WebApp
+    if (window.Telegram && Telegram.WebApp) {
+        tgWebApp = Telegram.WebApp;
+        tgWebApp.ready();
+        tgWebApp.expand();
+        tgWebApp.enableClosingConfirmation();
+
+        // Get Telegram user info if available
+        if (tgWebApp.initDataUnsafe && tgWebApp.initDataUnsafe.user) {
+            tgUser = tgWebApp.initDataUnsafe.user;
+        }
+    }
+
+    const pContainer = document.getElementById('particles');
+    for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 18 + 's';
+        p.style.animationDuration = (14 + Math.random() * 10) + 's';
+        pContainer.appendChild(p);
+    }
+    loadApiSettings();
+    loadUser();
+    renderTemplateBar();
+    renderTemplateGrid();
+    setInterval(checkApproval, 5000);
+}
+
+function loadApiSettings() {
+    const saved = localStorage.getItem('gt_api_settings');
+    if (saved) {
+        apiSettings = JSON.parse(saved);
+    } else {
+        apiSettings = { ...DEFAULT_API };
+        localStorage.setItem('gt_api_settings', JSON.stringify(apiSettings));
+    }
+    document.getElementById('apiEndpoint').value = apiSettings.endpoint || '';
+    document.getElementById('apiKey').value = apiSettings.key || '';
+    document.getElementById('apiModel').value = apiSettings.model || 'gpt-4o-mini';
+    updateApiStatus();
+}
+
+function saveApiSettings() {
+    apiSettings = {
+        endpoint: document.getElementById('apiEndpoint').value.trim(),
+        key: document.getElementById('apiKey').value.trim(),
+        model: document.getElementById('apiModel').value.trim() || 'gpt-4o-mini'
+    };
+    localStorage.setItem('gt_api_settings', JSON.stringify(apiSettings));
+    updateApiStatus();
+    showToast('✅ Настройки API сохранены');
+}
+
+function updateApiStatus() {
+    const hasApi = apiSettings.endpoint && apiSettings.key;
+    const el = document.getElementById('apiStatusText');
+    if (el) el.textContent = hasApi ? 'AI API подключен' : 'Локальный режим (без AI)';
+}
+
+function showApiSetup() {
+    openAdmin(true);
+}
+
+function showBotSetup() {
+    document.getElementById('botSetupModal').classList.add('active');
+}
+
+function generateNickname() {
+    const users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    const used = users.map(u => u.nick);
+    let nick;
+    let attempts = 0;
+    do {
+        nick = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)] + " " + ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+        attempts++;
+    } while (used.includes(nick) && attempts < 100);
+    return nick;
+}
+
+function loadUser() {
+    const saved = localStorage.getItem('gt_current_user');
+    if (saved) {
+        currentUser = JSON.parse(saved);
+        document.getElementById('headerNick').style.display = 'inline';
+        document.getElementById('headerNick').textContent = currentUser.nick;
+        if (currentUser.status === 'approved') {
+            showScreen('screenChat');
+            if (!currentUser.welcomed) {
+                addBotMessage('👋 С возвращением, ' + currentUser.nick + '! Я ваш AI-ассистент Grand Trust. Задавайте вопросы на русском — я сформирую ответы на английском для клиентов. Все цены и условия актуальны.', false);
+                currentUser.welcomed = true;
+                saveCurrentUser();
+            }
+        } else {
+            showScreen('screenPending');
+            document.getElementById('pendingNick').textContent = currentUser.nick;
+        }
+    }
+}
+
+function requestAccess() {
+    const nick = generateNickname();
+    const user = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+        nick: nick,
+        status: 'pending',
+        created: new Date().toISOString(),
+        history: [],
+        welcomed: false,
+        tgId: tgUser ? tgUser.id : null,
+        tgUsername: tgUser ? tgUser.username : null
+    };
+    const users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    users.push(user);
+    localStorage.setItem('gt_users', JSON.stringify(users));
+    localStorage.setItem('gt_current_user', JSON.stringify(user));
+    currentUser = user;
+    document.getElementById('headerNick').style.display = 'inline';
+    document.getElementById('headerNick').textContent = nick;
+    document.getElementById('pendingNick').textContent = nick;
+    showScreen('screenPending');
+    showToast('✅ Запрос отправлен администратору');
+
+    // Send data to bot if in Telegram
+    if (tgWebApp) {
+        tgWebApp.sendData(JSON.stringify({
+            action: 'request_access',
+            nick: nick,
+            userId: user.id,
+            tgId: tgUser ? tgUser.id : null
+        }));
+    }
+}
+
+function checkApproval() {
+    if (!currentUser || currentUser.status !== 'pending') return;
+    const users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    const updated = users.find(u => u.id === currentUser.id);
+    if (updated && updated.status === 'approved') {
+        currentUser = updated;
+        currentUser.welcomed = false;
+        localStorage.setItem('gt_current_user', JSON.stringify(currentUser));
+        showScreen('screenChat');
+        addBotMessage('🎉 Доступ одобрен! Добро пожаловать, ' + currentUser.nick + '. Я AI-ассистент Grand Trust. Пишите вопросы на русском — ответы для клиентов будут на английском.');
+        showToast('🎉 Администратор одобрил доступ');
+    }
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function backFromAdmin() {
+    if (currentUser && currentUser.status === 'approved') showScreen('screenChat');
+    else showScreen('screenWelcome');
+}
+
+// ===================== TEMPLATES UI =====================
+function renderTemplateBar() {
+    const bar = document.getElementById('templateBar');
+    let html = `<div class="template-chip ${currentTemplateCat==='all'?'active':''}" onclick="filterTemplates('all')">Все</div>`;
+    for (const [key, label] of Object.entries(TEMPLATE_CATS)) {
+        html += `<div class="template-chip ${currentTemplateCat===key?'active':''}" onclick="filterTemplates('${key}')">${label}</div>`;
+    }
+    bar.innerHTML = html;
+}
+
+function filterTemplates(cat) {
+    currentTemplateCat = cat;
+    renderTemplateBar();
+    renderTemplateGrid();
+}
+
+function renderTemplateGrid() {
+    const grid = document.getElementById('templateGrid');
+    let html = '';
+    for (const t of TEMPLATES) {
+        if (currentTemplateCat !== 'all' && t.cat !== currentTemplateCat) continue;
+        html += `<div class="template-card" onclick="useTemplate('${t.id}')">
+            <div class="tc-cat">${TEMPLATE_CATS[t.cat] || t.cat}</div>
+            <div class="tc-title">${t.title}</div>
+            <div class="tc-desc">${t.desc}</div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+}
+
+function useTemplate(id) {
+    const t = TEMPLATES.find(x => x.id === id);
+    if (!t) return;
+    addUserMessage('📋 Шаблон: ' + t.title);
+    processAI(t.prompt, true);
+}
+
+// ===================== CHAT =====================
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const val = input.value.trim();
+    if (!val || isTyping) return;
+    input.value = '';
+    addUserMessage(val);
+    processAI(val, false);
+}
+
+function addUserMessage(text) {
+    const chat = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'message msg-user';
+    const time = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    div.innerHTML = `<div>${escapeHtml(text)}</div><div class="msg-time">${time}</div>`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    if (currentUser) {
+        currentUser.history.push({role:'user', text, time: new Date().toISOString()});
+        saveCurrentUser();
+    }
+}
+
+function addBotMessage(text, save = true) {
+    const chat = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'message msg-bot';
+    const time = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    const clean = text.replace(/\n/g, '<br>');
+    div.innerHTML = `<div>${clean}</div><div class="msg-time">${time}</div>
+        <button class="copy-btn" onclick="copyMessage(this)">📋 Копировать</button>
+        <button class="send-to-chat-btn" onclick="sendToChat(this)">📤 В чат</button>`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    if (save && currentUser) {
+        currentUser.history.push({role:'bot', text, time: new Date().toISOString()});
+        saveCurrentUser();
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function copyMessage(btn) {
+    const msg = btn.parentElement.querySelector('div');
+    const text = msg.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ Скопировано в буфер');
+    });
+}
+
+function sendToChat(btn) {
+    const msg = btn.parentElement.querySelector('div');
+    const text = msg.innerText;
+
+    if (tgWebApp) {
+        // Send data back to bot
+        tgWebApp.sendData(JSON.stringify({
+            action: 'send_reply',
+            text: text,
+            nick: currentUser ? currentUser.nick : 'unknown',
+            time: new Date().toISOString()
+        }));
+        showToast('📤 Отправлено в Telegram-чат');
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ Скопировано (Telegram не обнаружен)');
+        });
+    }
+}
+
+function setTyping(active) {
+    isTyping = active;
+    document.getElementById('typingIndicator').classList.toggle('active', active);
+    document.getElementById('sendBtn').disabled = active;
+}
+
+// ===================== AI PROCESSING =====================
+async function processAI(userText, isTemplate) {
+    setTyping(true);
+
+    if (apiSettings.endpoint && apiSettings.key) {
+        try {
+            const reply = await callExternalAPI(userText, isTemplate);
+            setTyping(false);
+            addBotMessage(reply);
+            return;
+        } catch (e) {
+            console.error('API error:', e);
+        }
+    }
+
+    setTimeout(() => {
+        const reply = generateLocalReply(userText, isTemplate);
+        setTyping(false);
+        addBotMessage(reply);
+    }, 1200 + Math.random() * 800);
+}
+
+async function callExternalAPI(userText, isTemplate) {
+    const systemPrompt = `You are the professional AI assistant for Grand Trust Consulting (Almaty, Kazakhstan). You help managers reply to client inquiries about visas, jobs, immigration, and relocation.
+
+CRITICAL RULES:
+1. Answer STRICTLY based on the provided Knowledge Base below. NEVER invent prices, timelines, or terms.
+2. Maintain a professional, business-like, and courteous tone at all times.
+3. Use emojis sparingly for structure only.
+4. Always preserve exact prices and facts from the Knowledge Base.
+5. If information is insufficient, say you need to escalate to a senior manager.
+6. The manager may write to you in Russian, but your reply MUST be in English because it will be sent directly to the client.
+
+KNOWLEDGE BASE:
+${KNOWLEDGE_BASE}`;
+
+    const messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userText }
+    ];
+
+    const res = await fetch(apiSettings.endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiSettings.key
+        },
+        body: JSON.stringify({
+            model: apiSettings.model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 1500
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error('API error ' + res.status + ': ' + err);
+    }
+    const data = await res.json();
+    return data.choices[0].message.content;
+}
+
+function generateLocalReply(userText, isTemplate) {
+    const lower = userText.toLowerCase();
+
+    if (isTemplate) {
+        if (lower.includes('welcome') || lower.includes('greeting')) {
+            return `🌍 Welcome to Grand Trust!
+
+We provide premium visa solutions for African professionals seeking opportunities in Kazakhstan, Canada, Europe, and beyond.
+
+✅ Pay after visa receipt (Kazakhstan — 72h window)
+⚡ 2-3 day processing for Kazakhstan
+📈 98% approval rate
+
+How may we assist you today?`;
+        }
+        if (lower.includes('price') && lower.includes('kazakhstan')) {
+            return `💰 CURRENT PRICES — Kazakhstan
+
+🇰🇿 C3 Work Visa (1 year) — $550
+🛂 B2 Business/Tourist — $400
+
+✅ Included:
+• Document preparation
+• Consulate appointment booking
+• Application review by lawyer
+• Status tracking until approval
+• B2 to C3 conversion (for work visa)
+
+💳 Payment terms: After physical receipt of visa (72-hour window)
+⚡ Express processing: +$100 for 48-hour service`;
+        }
+        if (lower.includes('process') && lower.includes('c3')) {
+            return `🎯 C3 WORK VISA PROCESS (1 year)
+
+📌 Step 1: Entry Visa B2
+We prepare your B2 visa (business/guest category). Processing: 2-3 working days. This serves as your legal entry document.
+
+📌 Step 2: Conversion to C3
+Upon arrival in Kazakhstan, we convert your B2 to a full C3 Work Visa (1-year validity). Processing: 3-5 days locally. No additional embassy visits required.
+
+💰 Price: $550 covers both phases — B2 entry and C3 conversion. No hidden fees.
+
+✅ This is standard legal procedure in Kazakhstan.`;
+        }
+        if (lower.includes('job') && lower.includes('kazakhstan')) {
+            return `💼 AVAILABLE POSITIONS & SALARIES — Kazakhstan
+
+📦 Warehouse — $1,100/month (5/2, meals, transport)
+🏗️ Construction — $1,200/month (housing on-site, meals)
+☀️ Solar Installer — $1,300-1,500/month (housing at site)
+👨‍🏫 English/French Teacher — $1,500/month (flexible hours)
+💻 IT Specialist — $1,800-2,500/month (partial remote)
+🚛 Truck Driver — $1,400/month (local routes)
+🛵 Courier — $900-1,100/month (flexible)
+⚽ Footballer — $1,200-3,000/month (contracts 6+ months)
+🏥 Medical Admin — $1,200-1,400/month
+
+✅ All positions include legal C3 work visa. Send your CV and target country.`;
+        }
+        if (lower.includes('usa')) {
+            return `🇺🇸 USA VISA
+
+💰 Total Cost: $1,200 USD
+
+💳 Payment:
+• $600 upfront (legal preparation, consulate fees, document review)
+• $600 upon approval
+
+⏱️ Timeline: 14-21 days
+
+📦 Included:
+• B1/B2 Business & Tourist visa
+• F1 Student visa (with post-grad work strategy)
+• Work visa pathways (H1B, L1 consultations)
+• Interview coaching
+• Document verification and DS-160 form handling
+
+📝 African passports receive extra scrutiny at US embassies. We build your profile so strong that passport origin becomes a manageable detail, not a barrier.
+
+Send "USA" + your purpose (work/study/business) for assessment.`;
+        }
+        if (lower.includes('canada')) {
+            return `🇨🇦 CANADA VISA
+
+💰 Total Cost: $1,200 USD
+
+💳 Payment:
+• $600 upfront (legal retainers, government fees, document authentication)
+• $600 upon approval
+
+⏱️ Timeline: 14-21 days (standard elsewhere: 6-18 months)
+
+📦 Included:
+• Express Entry profile OR Work/Study permit
+• Job offer assistance (for work streams)
+• IELTS prep strategy (if needed)
+• Full legal representation
+• Post-landing guidance
+
+📝 For serious applicants with higher budgets. For fast, affordable entry — Kazakhstan is $550, 3 days, with payment after visa.`;
+        }
+        if (lower.includes('refusal') || lower.includes('denied')) {
+            return `🛡️ REFUSAL POLICY — ZERO RISK
+
+Zero financial risk to you.
+
+📌 If refusal occurs (2% chance):
+• You owe nothing. We absorb preparation costs.
+• We analyze the refusal reason (sometimes fixable with additional documents)
+• If fixable: we reapply immediately at no extra charge
+• If not fixable: we discuss alternative countries (Dubai, Turkey, etc.)
+
+🛡️ You only pay when you see the approved visa. If you never get it, you never pay.
+
+🎯 This is why we screen cases carefully upfront. If we take your case, we are confident it will succeed.`;
+        }
+        if (lower.includes('pay after') || lower.includes('why pay')) {
+            return `🤝 WHY "PAY AFTER"?
+
+We have inverted the traditional risk structure:
+
+• We invest first (legal fees, consulate appointments, document preparation)
+• You see the result first (visa in your passport)
+• You pay after (within 72 hours)
+
+🎯 This demonstrates our confidence in the approval process. 98% of clients pay within 24 hours of receipt.
+
+We trust our process; we trust you.`;
+        }
+        return `✅ Ready! Here is your professional reply.
+
+${userText}
+
+(Running in local mode. Connect API in Admin settings for fully dynamic responses.)`;
+    }
+
+    if (lower.includes('цена') || lower.includes('стоимость') || lower.includes('сколько') || lower.includes('price') || lower.includes('cost') || lower.includes('how much')) {
+        if (lower.includes('казахстан') || lower.includes('almaty') || lower.includes('kazakhstan')) {
+            return `💰 KAZAKHSTAN PRICING
+
+🇰🇿 C3 Work Visa (1 year): $550
+🛂 B2 Business/Tourist: $400
+
+Included: document prep, consulate booking, lawyer review, tracking, B2→C3 conversion.
+
+💳 Payment: strictly after visa receipt (72h window)
+⚡ Express: +$100 (48 hours)`;
+        }
+        if (lower.includes('сербия') || lower.includes('serbia')) return `🇷🇸 Serbia — $750 (50/50). Temporary residence permit, company registration, bank account. Timeline 7-10 days.`;
+        if (lower.includes('албания') || lower.includes('albania')) return `🇦🇱 Albania — $950 (50/50). Unique Permit, 0% tax for certain IT/freelance. Timeline 10-14 days.`;
+        if (lower.includes('молдова') || lower.includes('moldova')) return `🇲🇩 Moldova — $650 (50/50). Cheapest European option. Timeline 10-14 days.`;
+        if (lower.includes('канад') || lower.includes('canad')) return `🇨🇦 Canada — $1,200 (50/50). LMIA, Express Entry, 14-21 days.`;
+        if (lower.includes('сша') || lower.includes('usa') || lower.includes('america') || lower.includes('states')) return `🇺🇸 USA — $1,200 (50/50). B1/B2, F1, H1B/L1 consulting. 14-21 days.`;
+        return `💰 FULL PRICE LIST
+
+🇰🇿 Kazakhstan: C3 $550 / B2 $400
+🇷🇸 Serbia: $750 | 🇦🇱 Albania: $950 | 🇲🇪 Montenegro: $900
+🇲🇩 Moldova: $650 | 🇦🇹 Austria: $950 | 🇮🇹 Italy: $1,000
+🇪🇸 Spain: $950 | 🇩🇪 Germany: $1,100 | 🇫🇷 France: $1,050
+🇵🇹 Portugal: $900 | 🇬🇷 Greece: $850 | 🇨🇿 Czech: $800
+🇭🇺 Hungary: $800 | 🇵🇱 Poland: $850
+🇨🇦 Canada: $1,200 | 🇺🇸 USA: $1,200
+🇳🇿 New Zealand: $700 | 🇰🇷 South Korea: $750
+
+💳 Western Union | Crypto (USDT/BTC)`;
+    }
+
+    if (lower.includes('вакансия') || lower.includes('работа') || lower.includes('зарплат') || lower.includes('job') || lower.includes('work') || lower.includes('salary')) {
+        return `💼 JOB QUICK LIST
+
+🇰🇿 Kazakhstan:
+• Warehouse $1,100 | Construction $1,200 | Solar $1,300-1,500
+• Teacher $1,500 | IT $1,800-2,500 | Driver $1,400
+• Courier $900-1,100 | Footballer $1,200-3,000 | Medical Admin $1,200-1,400
+
+🇷🇸 Serbia: Int'l Driver €2,800-3,200
+🇦🇱 Albania: Regional Driver €2,400-2,900
+🇨🇦 Canada (LMIA): Warehouse CAD $2,800-3,500 | Construction CAD $3,000-4,500 | Caregiver CAD $2,800-3,500 | Long-Haul Driver CAD $4,000-6,000
+🇳🇿 New Zealand: Farm $2,200-2,600 | Construction $2,400-2,800 | Caregiver $2,200-2,600
+🇮🇹 Italy: Agriculture €1,200-1,500 | Hotel €1,100-1,400 | Caregiver €1,300-1,600
+
+✅ All positions include legal work visa.`;
+    }
+
+    if (lower.includes('документ') || lower.includes('паспорт') || lower.includes('фото') || lower.includes('document') || lower.includes('passport') || lower.includes('photo')) {
+        return `📋 DOCUMENT CHECKLIST — Kazakhstan
+
+1️⃣ PASSPORT
+• Clear photo/scan of bio data page
+• Valid minimum 6 months
+
+2️⃣ PHOTO
+• Size: 3×4cm (standard Kazakhstan size)
+• Background: White only
+• Face: No glasses, neutral expression
+
+✅ Once received, we start immediately (2-3 days processing).`;
+    }
+
+    if (lower.includes('срок') || lower.includes('время') || lower.includes('сколько ждать') || lower.includes('time') || lower.includes('how long') || lower.includes('timeline')) {
+        return `⏱️ PROCESSING TIMELINE
+
+🇰🇿 Kazakhstan: 2-3 working days after document submission
+
+📅 Day 1: File prep & lawyer review
+📅 Day 2: Consulate submission
+📅 Day 3: Approval & visa ready for pickup
+
+🌍 Other countries: 7-21 days
+
+⚡ Express Kazakhstan: +$100 for 48-hour service`;
+    }
+
+    if (lower.includes('оплат') || lower.includes('платеж') || lower.includes('как заплатить') || lower.includes('payment') || lower.includes('pay')) {
+        return `💳 PAYMENT TERMS
+
+🇰🇿 Kazakhstan: $0 upfront. Pay only after physical visa receipt (72-hour window).
+
+🌍 Other countries: 50% upfront + 50% after approval.
+
+💰 Accepted:
+• Western Union (Money Transfer)
+• Cryptocurrency (USDT / BTC)
+
+🛡️ Zero risk — you see the result first.`;
+    }
+
+    if (lower.includes('жилье') || lower.includes('квартира') || lower.includes('проживан') || lower.includes('housing') || lower.includes('apartment') || lower.includes('accommodation')) {
+        return `🏠 ACCOMMODATION IN ALMATY
+
+Move straight into furnished housing upon arrival.
+
+📋 Options:
+• Shared apartment (2-3 workers) — economical, instant community
+• Private studio — personal space, quieter
+
+✅ All units include:
+• Bed, desk, wardrobe
+• High-speed WiFi
+• Kitchen for cooking
+• First month utilities (covered by us)
+• Safe neighborhood near transport
+
+📸 Photos and exact address sent before ticket purchase.`;
+    }
+
+    if (lower.includes('аэропорт') || lower.includes('встреча') || lower.includes('прилет') || lower.includes('airport') || lower.includes('pickup') || lower.includes('arrival')) {
+        return `✈️ AIRPORT WELCOME SERVICE — Almaty
+
+We personally meet you at Almaty Airport.
+
+📋 Procedure:
+1. Send flight number and arrival time 48 hours before landing
+2. Representative greets you with name sign at baggage claim
+3. Transport to your accommodation provided
+4. Check-in assistance (keys, WiFi, utilities explained)
+5. Local SIM card setup
+
+🚫 No taxi negotiations, no getting lost. Door-to-door service.`;
+    }
+
+    if (lower.includes('легитим') || lower.includes('надежн') || lower.includes('мошенник') || lower.includes('доверие') || lower.includes('legit') || lower.includes('trust') || lower.includes('scam') || lower.includes('real')) {
+        return `🔍 LEGITIMACY CHECK
+
+We understand your concern regarding online agency legitimacy.
+
+1️⃣ You pay nothing until the visa stamp is in your passport.
+2️⃣ We provide official tracking numbers from the Kazakhstan consulate — verifiable directly.
+3️⃣ We have 500+ successful cases with client referrals available upon request.
+4️⃣ We can share our website link and video proof of recent approvals.
+
+🛡️ If we were not legitimate, we would not offer a "pay after approval" model.
+
+Your caution is warranted and respected. We are happy to provide any additional verification you need.`;
+    }
+
+    if (lower.includes('семья') || lower.includes('ребенок') || lower.includes('жена') || lower.includes('муж') || lower.includes('family') || lower.includes('wife') || lower.includes('husband') || lower.includes('child')) {
+        return `👨‍👩‍👧 FAMILY REUNIFICATION
+
+Yes — available after your first 6 months on C3 visa.
+
+📋 Process:
+1. You establish yourself (apartment, stable job)
+2. We apply for dependent visas for spouse and children
+3. They join you with residence permits tied to your work visa
+
+🎁 Family bonus: When applying together as a family unit, you receive 20% discount on total package.
+
+💡 We recommend arriving alone first to settle, then bringing family once stable. We handle all family paperwork when you are ready.`;
+    }
+
+    if (lower.includes('язык') || lower.includes('русский') || lower.includes('английский') || lower.includes('language') || lower.includes('english') || lower.includes('russian')) {
+        return `🗣️ LANGUAGE BARRIER?
+
+You will manage fine with English alone.
+
+📌 Reality:
+• Business districts (Almaty, Astana) are very international — English works in offices
+• Employers often provide translators initially
+• We provide a survival phrasebook and connect you with African community networks
+• Google Translate works offline for daily shopping
+• Many clients work in English-speaking environments for months while learning Russian
+
+📝 Language is not required for the visa process — we handle all paperwork. Optional tutors available after arrival.`;
+    }
+
+    if (lower.includes('привет') || lower.includes('здравствуй') || lower.includes('hello') || lower.includes('hi') || lower.includes('hey') || lower.includes('start')) {
+        return `🌍 Welcome to Grand Trust Consulting!
+
+I am your AI assistant. I can help with:
+• 🇰🇿 Kazakhstan visas (C3/B2)
+• 🌍 Global destinations (Canada, USA, Europe, Asia)
+• 💼 Job listings and salaries
+• 🛟 Logistics (housing, airport, flights)
+• ❓ Any client questions
+
+Ask me anything or pick a template below. All prices are up to date.`;
+    }
+
+    return `📋 Thank you for your inquiry!
+
+I am running in local mode. For the most accurate and dynamic responses, please ensure the API is connected in Admin Settings (⚙️).
+
+In the meantime, feel free to ask about:
+• Visa prices for any country
+• Job openings and salaries
+• Document requirements
+• Payment terms and timelines
+
+Or reach us directly: info@grandtrustconsulting.com`;
+}
+
+// ===================== ADMIN =====================
+function openAdmin(skipPassword = false) {
+    if (skipPassword || adminAuthenticated) {
+        showScreen('screenAdmin');
+        renderAdminUsers();
+        return;
+    }
+    document.getElementById('passwordModal').classList.add('active');
+    setTimeout(() => document.getElementById('adminPass').focus(), 100);
+}
+
+function verifyAdmin() {
+    const val = document.getElementById('adminPass').value;
+    if (val === ADMIN_PASSWORD) {
+        adminAuthenticated = true;
+        document.getElementById('passwordModal').classList.remove('active');
+        document.getElementById('adminPass').value = '';
+        document.getElementById('passError').style.display = 'none';
+        showScreen('screenAdmin');
+        renderAdminUsers();
+    } else {
+        document.getElementById('passError').style.display = 'block';
+    }
+}
+
+function renderAdminUsers() {
+    const users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    const list = document.getElementById('adminUserList');
+    document.getElementById('statTotal').textContent = users.length;
+    document.getElementById('statPending').textContent = users.filter(u => u.status === 'pending').length;
+    document.getElementById('statApproved').textContent = users.filter(u => u.status === 'approved').length;
+
+    if (!users.length) {
+        list.innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:20px;">Пользователей пока нет</div>';
+        return;
+    }
+    let html = '';
+    users.slice().reverse().forEach(u => {
+        const statusClass = u.status === 'approved' ? 'status-approved' : u.status === 'rejected' ? 'status-rejected' : 'status-pending';
+        const statusText = u.status === 'approved' ? 'Одобрен' : u.status === 'rejected' ? 'Отклонен' : 'Ожидает';
+        const date = new Date(u.created).toLocaleDateString('ru-RU');
+        html += `<div class="user-card">
+            <div class="user-info">
+                <div class="user-name">${u.nick}</div>
+                <div class="user-meta">ID: ${u.id.substr(0,8)}… • ${date} • Запросов: ${(u.history||[]).length}</div>
+            </div>
+            <div style="text-align:right;">
+                <div class="status-badge ${statusClass}">${statusText}</div>
+                ${u.status === 'pending' ? `
+                <div class="action-btns">
+                    <button class="btn-small btn-approve" onclick="approveUser('${u.id}')">✅ Одобрить</button>
+                    <button class="btn-small btn-reject" onclick="rejectUser('${u.id}')">❌ Отклонить</button>
+                </div>` : ''}
+            </div>
+        </div>`;
+    });
+    list.innerHTML = html;
+}
+
+function approveUser(id) {
+    let users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    const idx = users.findIndex(u => u.id === id);
+    if (idx >= 0) {
+        users[idx].status = 'approved';
+        localStorage.setItem('gt_users', JSON.stringify(users));
+        if (currentUser && currentUser.id === id) {
+            currentUser = users[idx];
+            localStorage.setItem('gt_current_user', JSON.stringify(currentUser));
+        }
+        renderAdminUsers();
+        showToast('✅ Пользователь одобрен');
+    }
+}
+
+function rejectUser(id) {
+    let users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    const idx = users.findIndex(u => u.id === id);
+    if (idx >= 0) {
+        users[idx].status = 'rejected';
+        localStorage.setItem('gt_users', JSON.stringify(users));
+        renderAdminUsers();
+        showToast('❌ Пользователь отклонен');
+    }
+}
+
+function saveCurrentUser() {
+    if (!currentUser) return;
+    const users = JSON.parse(localStorage.getItem('gt_users') || '[]');
+    const idx = users.findIndex(u => u.id === currentUser.id);
+    if (idx >= 0) users[idx] = currentUser;
+    else users.push(currentUser);
+    localStorage.setItem('gt_users', JSON.stringify(users));
+    localStorage.setItem('gt_current_user', JSON.stringify(currentUser));
+}
+
+function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '') + ' show';
+    setTimeout(() => t.className = 'toast', 2500);
+}
+
+document.getElementById('passwordModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+});
+
+document.getElementById('botSetupModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+});
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
